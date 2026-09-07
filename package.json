@@ -1,0 +1,12 @@
+{
+  "name": "findit",
+  "private": true,
+  "description": "FINDiT — 교내 분실물 등록·매칭 웹 서비스",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}
