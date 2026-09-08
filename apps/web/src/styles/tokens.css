@@ -1,0 +1,63 @@
+/*
+ * FINDiT 디자인 토큰 — 색상의 단일 출처.
+ * 화면 코드에서는 색상 리터럴을 직접 쓰지 않고, 아래 @theme 로 연결한 이름(bg-st-keep 등)만 쓴다.
+ */
+:root {
+  --accent: #2f6feb;
+  --accent-weak: #e9f0fe;
+  --accent-dark: #1f52c0;
+
+  --bg-1: #ffffff;
+  --bg-2: #f6f7f9;
+  --bg-3: #eceef3;
+
+  --tx-1: #1a1d23;
+  --tx-2: #5b6472;
+  --tx-3: #949cab;
+
+  --line: #e3e6ec;
+
+  --st-keep: #2f6feb;
+  --st-check: #d97706;
+  --st-done: #16a34a;
+  --st-expire: #94a3b8;
+
+  /* 오류 상태 — 토큰 표 밖의 고정값 */
+  --err: #dc2626;
+  --err-weak: #fef5f5;
+
+  --r: 12px;
+  --r-field: 10px;
+  --r-chip: 16px;
+}
+
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-weak: var(--accent-weak);
+  --color-accent-dark: var(--accent-dark);
+
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+
+  --color-tx-1: var(--tx-1);
+  --color-tx-2: var(--tx-2);
+  --color-tx-3: var(--tx-3);
+
+  --color-line: var(--line);
+
+  --color-st-keep: var(--st-keep);
+  --color-st-check: var(--st-check);
+  --color-st-done: var(--st-done);
+  --color-st-expire: var(--st-expire);
+
+  --color-err: var(--err);
+  --color-err-weak: var(--err-weak);
+
+  --radius-card: var(--r);
+  --radius-field: var(--r-field);
+  --radius-chip: var(--r-chip);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic',
+    'Segoe UI', Roboto, sans-serif;
+}
