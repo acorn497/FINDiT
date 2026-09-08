@@ -4,3 +4,4 @@
 
 - 프로젝트 표기는 `FINDiT`(소문자 i)로 통일한다. npm 패키지 이름은 소문자 규칙 때문에 `findit`, `@findit/*`를 쓴다.
 - 모든 커밋 끝에 `Phase: Pn` 트레일러를 단다. P8 이후 커밋은 날짜로 단계를 구분할 수 없어 검증 스크립트가 이 값으로 단계별 커밋 수를 센다.
+- vitest 4의 선택적 peer 의존성 때문에 npm 10 설치가 실패해 `.npmrc`에 `legacy-peer-deps=true`를 둔다. 필요한 peer는 package.json에 직접 적는다.
