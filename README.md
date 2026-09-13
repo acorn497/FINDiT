@@ -6,3 +6,16 @@
 비교해 볼 만한 것을 **후보**로 보여 준다. 최종 판단과 전달은 항상 사람이 한다.
 
 > 작업 중인 저장소입니다. 실행 방법은 단계가 진행되면서 채웁니다.
+
+## 실행
+
+```bash
+docker compose up --build -d     # db · api · web
+open http://localhost:8080
+```
+
+## 테스트
+
+```bash
+./scripts/test-all.sh            # FE 단위 / BE 단위·e2e 를 별도 compose 프로젝트에서 실행
+```

@@ -17,6 +17,7 @@ services:
       retries: 30
 
   api:
+    image: findit-api
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -35,6 +36,7 @@ services:
       start_period: 5s
 
   web:
+    image: findit-web
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -48,6 +50,21 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
+
+  # 테스트 전용 (scripts/test-all.sh) — FE 단위 / BE 단위·e2e / Playwright
+  e2e:
+    image: findit-e2e
+    profiles: [e2e]
+    build:
+      context: .
+      dockerfile: scripts/test.Dockerfile
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-findit}:${POSTGRES_PASSWORD:-findit}@db:5432/${POSTGRES_DB:-findit}
+      BASE_URL: http://web
+      TZ: Asia/Seoul
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   db-data:
