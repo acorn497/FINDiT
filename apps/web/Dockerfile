@@ -5,10 +5,12 @@ WORKDIR /repo
 COPY package.json package-lock.json .npmrc ./
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
+COPY packages/shared/package.json packages/shared/
 # 사내 프록시처럼 TLS 를 가로채는 환경이면 빌드 시크릿(extra_ca)으로 CA 를 넘길 수 있다. 없으면 무시된다.
 RUN --mount=type=secret,id=extra_ca,required=false \
     if [ -f /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi; \
-    npm ci --workspace @findit/web --include-workspace-root --no-audit --no-fund
+    npm ci --workspace @findit/web --workspace @findit/shared --include-workspace-root --no-audit --no-fund
+COPY packages/shared packages/shared
 COPY apps/web apps/web
 RUN npm run build --workspace @findit/web
 

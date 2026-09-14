@@ -3,6 +3,7 @@ const base = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   transform: { '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json', isolatedModules: true }] },
   testEnvironment: 'node',
+  moduleNameMapper: { '^@findit/shared$': '<rootDir>/../../packages/shared/src/types.ts' },
 };
 
 module.exports = {

@@ -11,6 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@findit/shared': fileURLToPath(new URL('../../packages/shared/src/types.ts', import.meta.url)),
     },
   },
   server: {

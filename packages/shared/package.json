@@ -1,0 +1,14 @@
+{
+  "name": "@findit/shared",
+  "private": true,
+  "version": "0.0.0",
+  "description": "FINDiT 공용 타입 — 상태·카테고리 enum, API 응답 타입, 한글 라벨",
+  "main": "dist/types.js",
+  "types": "dist/types.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}
