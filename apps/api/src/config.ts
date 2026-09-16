@@ -6,4 +6,8 @@ export const config = {
   get databaseUrl() {
     return process.env.DATABASE_URL ?? 'postgres://findit:findit@localhost:5432/findit';
   },
+  /** 기동 시 시드 실행 여부 (기본 true) */
+  get seedOnStart() {
+    return process.env.SEED_ON_START !== 'false';
+  },
 };
