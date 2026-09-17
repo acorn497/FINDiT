@@ -6,6 +6,10 @@ export const config = {
   get databaseUrl() {
     return process.env.DATABASE_URL ?? 'postgres://findit:findit@localhost:5432/findit';
   },
+  /** HTTPS 뒤에서 운영할 때만 true */
+  get cookieSecure() {
+    return process.env.COOKIE_SECURE === 'true';
+  },
   /** 기동 시 시드 실행 여부 (기본 true) */
   get seedOnStart() {
     return process.env.SEED_ON_START !== 'false';

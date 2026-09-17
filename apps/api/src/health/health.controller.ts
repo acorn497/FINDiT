@@ -1,8 +1,10 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { DataSource } from 'typeorm';
+import { Public } from '../common/decorators';
 
 /** compose 헬스체크용. DB 연결까지 확인한다. */
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(private readonly dataSource: DataSource) {}
