@@ -5,6 +5,7 @@ import { config } from '../config';
 import { CurrentUser, Public, type AuthedRequest } from '../common/decorators';
 import { CheckEmailDto, LoginDto } from './auth.dto';
 import { AuthService, SESSION_COOKIE, SESSION_TTL_MS } from './auth.service';
+import { PasswordResetService } from './password-reset.service';
 
 const cookieOptions = (): CookieOptions => ({
   httpOnly: true,
@@ -15,7 +16,10 @@ const cookieOptions = (): CookieOptions => ({
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly passwordReset: PasswordResetService,
+  ) {}
 
   @Public()
   @Post('check-email')
@@ -31,6 +35,14 @@ export class AuthController {
     const { token, user } = await this.auth.login(dto.email, dto.password, req.headers['user-agent']);
     res.cookie(SESSION_COOKIE, token, { ...cookieOptions(), maxAge: SESSION_TTL_MS });
     return user;
+  }
+
+  /** 3단계 — 재설정 안내 발송. 60초 안에 다시 요청하면 429 + retryAfter */
+  @Public()
+  @Post('password-reset')
+  @HttpCode(200)
+  requestPasswordReset(@Body() dto: CheckEmailDto) {
+    return this.passwordReset.request(dto.email);
   }
 
   @Get('me')
