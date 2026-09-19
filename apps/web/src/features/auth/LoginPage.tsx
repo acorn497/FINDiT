@@ -1,3 +1,4 @@
+import { PASSWORD_RESET_COOLDOWN_SEC } from '@findit/shared';
 import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { ApiError } from '../../shared/api/client';
@@ -5,6 +6,7 @@ import { email as emailRule, minLength, required } from '../../shared/form/rules
 import { StepProgress } from '../../shared/form/StepProgress';
 import { TextField } from '../../shared/form/TextField';
 import { useField } from '../../shared/form/useField';
+import { useCountdown } from '../../shared/hooks/useCountdown';
 import { Logo } from '../../shared/layout/Logo';
 import { Button } from '../../shared/ui/Button';
 import { authApi } from './api';
@@ -31,6 +33,7 @@ export function LoginPage() {
   const [pending, setPending] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
+  const cooldown = useCountdown();
 
   const email = useField('', [required('학교 계정을 입력해 주세요'), emailRule('이메일 형식이 아닙니다')], {
     showAll: showAll && step === 1,
@@ -75,14 +78,21 @@ export function LoginPage() {
   };
 
   const sendReset = async () => {
-    if (pending) return;
+    if (pending || cooldown.running) return;
     setPending(true);
     setResetError(null);
     try {
-      await authApi.passwordReset(email.value.trim());
+      const res = await authApi.passwordReset(email.value.trim());
       setResetSent(true);
+      cooldown.start(res.retryAfter ?? PASSWORD_RESET_COOLDOWN_SEC);
     } catch (e) {
-      setResetError(e instanceof ApiError ? e.message : '재설정 안내를 보내지 못했습니다');
+      if (e instanceof ApiError && e.status === 429 && e.retryAfter) {
+        // 서버가 강제하는 대기 시간에 맞춘다
+        setResetSent(true);
+        cooldown.start(e.retryAfter);
+      } else {
+        setResetError(e instanceof ApiError ? e.message : '재설정 안내를 보내지 못했습니다');
+      }
     } finally {
       setPending(false);
     }
@@ -156,9 +166,15 @@ export function LoginPage() {
           </div>
 
           <div className="mt-6 flex flex-col gap-2.5">
-            <Button type="submit" block loading={pending}>
-              {step === 3 ? (resetSent ? '다시 보내기' : '재설정 안내 보내기') : '다음'}
-            </Button>
+            {step === 3 ? (
+              <Button type="submit" block loading={pending} disabled={cooldown.running}>
+                {!resetSent ? '재설정 안내 보내기' : cooldown.running ? `다시 보내기 (${cooldown.remaining}초)` : '다시 보내기'}
+              </Button>
+            ) : (
+              <Button type="submit" block loading={pending}>
+                다음
+              </Button>
+            )}
             {step > 1 && (
               <Button variant="secondary" block onClick={() => goTo((step - 1) as Step)}>
                 이전 단계로
