@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router';
+import { LoginPage } from './features/auth/LoginPage';
 import { RequireAuth } from './features/auth/RequireAuth';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
@@ -8,7 +9,7 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* 공개 경로 */}
-      <Route path="/login" element={<PlaceholderPage title="로그인" />} />
+      <Route path="/login" element={<LoginPage />} />
 
       {/* 보호 경로 */}
       <Route element={<RequireAuth />}>

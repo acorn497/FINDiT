@@ -20,10 +20,15 @@ describe('AppRoutes', () => {
   it.each([
     ['/found/new', '습득물 등록'],
     ['/lost/new', '분실 신고 작성'],
-    ['/login', '로그인'],
   ])('%s 는 입력 흐름이라 하단 탭을 숨긴다', (route, title) => {
     renderWithRouter(<AppRoutes />, { route });
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
+    expect(navs()).toHaveLength(0);
+  });
+
+  it('/login 은 로그인 화면이고 하단 탭이 없다', () => {
+    renderWithRouter(<AppRoutes />, { route: '/login' });
+    expect(screen.getByText(/1 \/ 3 단계 · 계정 확인/)).toBeInTheDocument();
     expect(navs()).toHaveLength(0);
   });
 
