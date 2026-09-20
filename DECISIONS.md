@@ -5,3 +5,8 @@
 - 프로젝트 표기는 `FINDiT`(소문자 i)로 통일한다. npm 패키지 이름은 소문자 규칙 때문에 `findit`, `@findit/*`를 쓴다.
 - 모든 커밋 끝에 `Phase: Pn` 트레일러를 단다. P8 이후 커밋은 날짜로 단계를 구분할 수 없어 검증 스크립트가 이 값으로 단계별 커밋 수를 센다.
 - vitest 4의 선택적 peer 의존성 때문에 npm 10 설치가 실패해 `.npmrc`에 `legacy-peer-deps=true`를 둔다. 필요한 peer는 package.json에 직접 적는다.
+- 비밀번호 해시는 네이티브 빌드가 필요 없는 `bcryptjs`(bcrypt 알고리즘, cost 10)를 쓴다. alpine 이미지에서 추가 도구 없이 빌드된다.
+- 비밀번호 재설정은 학교 메일 연동이 범위 밖이라 "안내 발송" 기록만 남긴다. 60초 재발송 제한은 서버 메모리(사용자별 마지막 발송 시각)로 강제하며, api 재시작 시 초기화된다.
+- 로그인 실패 사유 코드: 없는 계정 `USER_NOT_FOUND`, 비밀번호 불일치 `WRONG_PASSWORD`, 세션 만료 `SESSION_EXPIRED` (모두 401).
+- 세션 쿠키 이름은 `findit_sid`, 유효기간 7일, `HttpOnly; SameSite=Lax`. DB 에는 토큰의 SHA-256 만 둔다.
+- 시드 계정 이름은 목업에 없어 임의로 정했다 (s2217 이지우 · s2103 박서준 · teacher 최은영).

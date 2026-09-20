@@ -14,6 +14,14 @@ docker compose up --build -d     # db · api · web
 open http://localhost:8080
 ```
 
+### 시드 계정 (비밀번호 모두 `findit1234`)
+
+| 이메일 | 역할 |
+| --- | --- |
+| s2217@gbsw.hs.kr | 학생 |
+| s2103@gbsw.hs.kr | 학생 |
+| teacher@gbsw.hs.kr | 교사 |
+
 ## 테스트
 
 ```bash
