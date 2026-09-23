@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, Ref } from 'react';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -7,6 +7,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** 요청 중 표시 — 버튼을 비활성화하지는 않고 aria-busy 만 켠다 */
   loading?: boolean;
   block?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 const VARIANT: Record<Variant, string> = {
