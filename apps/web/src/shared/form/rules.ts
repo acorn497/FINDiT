@@ -1,3 +1,5 @@
+import { todayISO } from '../lib/date';
+
 /**
  * 입력 검사 규칙. 규칙은 값을 받아 오류 문구(실패) 또는 null(통과)을 돌려준다.
  * useField 는 규칙 배열을 순서대로 검사해 첫 오류 하나만 보여 준다.
@@ -27,6 +29,15 @@ export const email =
   (message = '이메일 형식이 아닙니다'): Rule<string> =>
   (v) =>
     v.trim() !== '' && !EMAIL_RE.test(v.trim()) ? message : null;
+
+/**
+ * notFuture — 오늘 이후 날짜를 거부한다 (오늘은 통과).
+ * 값은 'YYYY-MM-DD'. today 를 넘기면 그 날짜를 기준으로 본다 (테스트용).
+ */
+export const notFuture =
+  (message = '오늘 이후의 날짜는 선택할 수 없습니다', today: () => string = todayISO): Rule<string> =>
+  (v) =>
+    v !== '' && v > today() ? message : null;
 
 /** 규칙 배열을 순서대로 검사해 첫 오류만 돌려준다. */
 export function firstError<T>(value: T, rules: Rule<T>[]): string | null {

@@ -1,4 +1,4 @@
-import { email, firstError, maxLength, minLength, required } from './rules';
+import { email, firstError, maxLength, minLength, notFuture, required } from './rules';
 
 describe('rules', () => {
   it('required — 빈 문자열·공백·빈 배열·null 은 실패', () => {
@@ -36,5 +36,28 @@ describe('rules', () => {
     expect(firstError('abc', rules)).toBe('형식');
     expect(firstError('a@b.co', rules)).toBe('길이');
     expect(firstError('a@b.co', [])).toBeNull();
+  });
+});
+
+describe('notFuture', () => {
+  const rule = notFuture('미래 불가', () => '2026-09-23');
+
+  it('경계값 — 오늘은 통과, 내일은 실패', () => {
+    expect(rule('2026-09-23')).toBeNull();
+    expect(rule('2026-09-24')).toBe('미래 불가');
+  });
+
+  it('과거·빈 값은 통과 (빈 값은 required 에 맡긴다)', () => {
+    expect(rule('2026-01-01')).toBeNull();
+    expect(rule('')).toBeNull();
+  });
+
+  it('기본 기준일은 기기의 오늘', () => {
+    const today = new Date();
+    const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const iso = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    expect(notFuture()(iso(today))).toBeNull();
+    expect(notFuture()(iso(tomorrow))).toBe('오늘 이후의 날짜는 선택할 수 없습니다');
   });
 });
