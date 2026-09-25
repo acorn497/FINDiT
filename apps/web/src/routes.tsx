@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router';
 import { LoginPage } from './features/auth/LoginPage';
 import { RequireAuth } from './features/auth/RequireAuth';
+import { FoundNewPage } from './features/found/FoundNewPage';
 import { LostReportNewPage } from './features/lost/LostReportNewPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
@@ -27,7 +28,7 @@ export function AppRoutes() {
         </Route>
 
         {/* 입력 흐름 보호 — 하단 탭을 숨긴다 */}
-        <Route path="found/new" element={<PlaceholderPage title="습득물 등록" />} />
+        <Route path="found/new" element={<FoundNewPage />} />
         <Route path="lost/new" element={<LostReportNewPage />} />
       </Route>
 
