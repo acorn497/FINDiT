@@ -34,6 +34,12 @@ describe('AppRoutes', () => {
     expect(navs()).toHaveLength(0);
   });
 
+  it('[등록] 탭은 분실 신고·습득물 등록 두 갈래를 보여 준다', async () => {
+    renderApp(<AppRoutes />, { route: '/register' });
+    expect(await screen.findByRole('link', { name: /분실 신고 작성/ })).toHaveAttribute('href', '/lost/new');
+    expect(screen.getByRole('link', { name: /습득물 등록/ })).toHaveAttribute('href', '/found/new');
+  });
+
   it('없는 경로는 404 화면', async () => {
     renderApp(<AppRoutes />, { route: '/nope' });
     expect(await screen.findByText('페이지를 찾을 수 없습니다')).toBeInTheDocument();

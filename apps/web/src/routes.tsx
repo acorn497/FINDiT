@@ -5,6 +5,7 @@ import { FoundNewPage } from './features/found/FoundNewPage';
 import { LostReportNewPage } from './features/lost/LostReportNewPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { RegisterPage } from './pages/RegisterPage';
 import { AppLayout } from './shared/layout/AppLayout';
 
 export function AppRoutes() {
@@ -22,7 +23,7 @@ export function AppRoutes() {
           <Route index element={<PlaceholderPage title="홈" />} />
           <Route path="found" element={<PlaceholderPage title="습득물 목록" />} />
           <Route path="found/:id" element={<PlaceholderPage title="습득물 상세" />} />
-          <Route path="register" element={<PlaceholderPage title="등록하기" />} />
+          <Route path="register" element={<RegisterPage />} />
           <Route path="matches" element={<PlaceholderPage title="매칭 후보" />} />
           <Route path="me/reports" element={<PlaceholderPage title="내 신고 관리" />} />
           <Route path="notifications" element={<PlaceholderPage title="알림" />} />
