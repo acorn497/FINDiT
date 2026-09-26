@@ -10,6 +10,7 @@ import { useCountdown } from '../../shared/hooks/useCountdown';
 import { Logo } from '../../shared/layout/Logo';
 import { Button } from '../../shared/ui/Button';
 import { authApi } from './api';
+import { useAuth } from './AuthContext';
 
 type Step = 1 | 2 | 3;
 
@@ -26,6 +27,7 @@ const STEP_LABEL: Record<Step, string> = {
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = useAuth();
   const from = (location.state as { from?: string } | null)?.from ?? '/';
 
   const [step, setStep] = useState<Step>(1);
@@ -68,7 +70,7 @@ export function LoginPage() {
     if (!password.valid || pending) return;
     setPending(true);
     try {
-      await authApi.login(email.value.trim(), password.value);
+      await auth.login(email.value.trim(), password.value);
       navigate(from, { replace: true });
     } catch (e) {
       password.setServerError(e instanceof ApiError ? e.message : '로그인하지 못했습니다');

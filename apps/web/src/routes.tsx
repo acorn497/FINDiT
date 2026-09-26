@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router';
 import { LoginPage } from './features/auth/LoginPage';
-import { RequireAuth } from './features/auth/RequireAuth';
+import { GuestOnly, RequireAuth } from './features/auth/RequireAuth';
 import { FoundNewPage } from './features/found/FoundNewPage';
 import { LostReportNewPage } from './features/lost/LostReportNewPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -11,7 +11,9 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* 공개 경로 */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route element={<GuestOnly />}>
+        <Route path="/login" element={<LoginPage />} />
+      </Route>
 
       {/* 보호 경로 */}
       <Route element={<RequireAuth />}>

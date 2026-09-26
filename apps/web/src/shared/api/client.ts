@@ -13,6 +13,20 @@ export class ApiError extends Error {
   }
 }
 
+type Listener = () => void;
+const unauthorizedListeners = new Set<Listener>();
+
+/** 로그인이 필요한 API 가 401 을 돌려줄 때 알림을 받는다 (세션 만료 처리) */
+export function onUnauthorized(listener: Listener) {
+  unauthorizedListeners.add(listener);
+  return () => {
+    unauthorizedListeners.delete(listener);
+  };
+}
+
+/** 401 이어도 세션 만료로 보지 않는 경로 (로그인 과정) */
+const AUTH_FLOW = /^\/auth\/(check-email|login|password-reset|me)$/;
+
 export interface ApiOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
@@ -47,6 +61,7 @@ export async function api<T>(path: string, { method, body, signal }: ApiOptions 
 
   if (!res.ok) {
     const err = (data ?? {}) as Partial<ApiErrorBody>;
+    if (res.status === 401 && !AUTH_FLOW.test(path)) unauthorizedListeners.forEach((l) => l());
     throw new ApiError(res.status, err.code ?? `HTTP_${res.status}`, err.message ?? '요청을 처리하지 못했습니다', err.retryAfter);
   }
   return data as T;

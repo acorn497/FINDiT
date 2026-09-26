@@ -1,9 +1,12 @@
+import { LogOut } from 'lucide-react';
 import { NavLink } from 'react-router';
+import { useAuth } from '../../features/auth/AuthContext';
 import { Logo } from './Logo';
 import { NAV_ITEMS } from './navItems';
 
 /** 넓은 화면(≥768px)의 왼쪽 사이드 메뉴 */
 export function SideNav() {
+  const { user, logout } = useAuth();
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-bg-1 px-4 py-6 md:flex">
       <Logo className="px-3 text-2xl" />
@@ -28,6 +31,20 @@ export function SideNav() {
           ))}
         </ul>
       </nav>
+      {user && (
+        <div className="mt-auto border-t border-line px-3 pt-4">
+          <p className="text-sm font-semibold">{user.name}</p>
+          <p className="text-xs text-tx-3">{user.email}</p>
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="mt-3 flex items-center gap-2 text-sm font-semibold text-tx-2 hover:text-tx-1"
+          >
+            <LogOut size={16} aria-hidden />
+            로그아웃
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

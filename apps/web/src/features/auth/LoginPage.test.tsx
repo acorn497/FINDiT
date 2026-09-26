@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { mockApi } from '../../test/mockApi';
+import { AuthProvider } from './AuthContext';
 import { LoginPage } from './LoginPage';
 
 const USER = { id: 'u1', email: 's2217@gbsw.hs.kr', name: '이지우', role: 'STUDENT', grade: 2, classNo: 2 };
@@ -17,14 +18,17 @@ function setup(routes: Parameters<typeof mockApi>[0] = {}) {
         ? [200, USER]
         : [401, { code: 'WRONG_PASSWORD', message: '비밀번호가 올바르지 않습니다' }],
     'POST /auth/password-reset': [200, { sent: true, retryAfter: 60 }],
+    'GET /auth/me': [401, { code: 'UNAUTHENTICATED', message: '로그인이 필요합니다' }],
     ...routes,
   });
   render(
     <MemoryRouter initialEntries={[{ pathname: '/login', state: { from: '/found' } }]}>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/found" element={<p>습득물 목록 화면</p>} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/found" element={<p>습득물 목록 화면</p>} />
+        </Routes>
+      </AuthProvider>
     </MemoryRouter>,
   );
   return api;
@@ -50,7 +54,7 @@ describe('LoginPage', () => {
     expect(next()).toBeEnabled();
     await userEvent.click(next());
     expect(screen.getByRole('alert')).toHaveTextContent('학교 계정을 입력해 주세요');
-    expect(api.calls).toHaveLength(0);
+    expect(api.calls.filter((c) => c.path === '/auth/check-email')).toHaveLength(0);
   });
 
   it('미등록 계정이면 서버 오류를 칸 아래에 보여 준다', async () => {
