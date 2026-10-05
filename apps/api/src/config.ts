@@ -6,6 +6,10 @@ export const config = {
   get databaseUrl() {
     return process.env.DATABASE_URL ?? 'postgres://findit:findit@localhost:5432/findit';
   },
+  /** 업로드 파일 저장 폴더 (compose 에서는 /app/uploads 볼륨) */
+  get uploadDir() {
+    return process.env.UPLOAD_DIR ?? `${process.cwd()}/uploads`;
+  },
   /** HTTPS 뒤에서 운영할 때만 true */
   get cookieSecure() {
     return process.env.COOKIE_SECURE === 'true';

@@ -1,6 +1,16 @@
 import { Category, FoundItemStatus } from '@findit/shared';
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { dateString } from '../common/columns';
+import { Photo } from '../uploads/photo.entity';
 import { User } from '../users/user.entity';
 
 @Entity('found_items')
@@ -40,6 +50,9 @@ export class FoundItem {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'reporter_id' })
   reporter: User;
+
+  @OneToMany(() => Photo, (photo) => photo.foundItem)
+  photos: Photo[];
 
   @Column({ name: 'expires_at', type: 'timestamptz', precision: 3 })
   expiresAt: Date;

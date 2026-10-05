@@ -5,6 +5,7 @@ import { buildDataSourceOptions } from './database/data-source';
 import { FoundItemsModule } from './found-items/found-items.module';
 import { HealthModule } from './health/health.module';
 import { LostReportsModule } from './lost-reports/lost-reports.module';
+import { UploadsModule } from './uploads/uploads.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     LostReportsModule,
     FoundItemsModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}
