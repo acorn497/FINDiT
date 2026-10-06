@@ -5,6 +5,7 @@ import { todayInSeoul } from '../src/common/dates';
 import { runSeed } from '../src/database/seeds/seed';
 import { createTestApp } from './app';
 import { loginAs } from './helpers';
+import { tinyPng } from './images';
 
 const tomorrow = () => new Date(Date.parse(`${todayInSeoul()}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
 
@@ -88,6 +89,27 @@ describe('분실 신고 · 습득물 생성', () => {
         .send({ category: 'ETC', keptAt: '행정실', foundDate: '2026-09-20', photoIds: ids })
         .expect(400);
       expect(res.body.message).toBe('사진은 최대 3장입니다');
+    });
+
+    it('미리 올린 사진을 보낸 순서대로 연결한다', async () => {
+      const up = async (w: number) =>
+        (await request(http).post('/api/uploads').set('Cookie', cookie).attach('file', tinyPng(w, 1), 'p.png').expect(201)).body;
+      const [a, b] = [await up(1), await up(2)];
+      const res = await request(http)
+        .post('/api/found-items')
+        .set('Cookie', cookie)
+        .send({ category: 'ELECTRONICS', keptAt: '2학년 교무실', foundDate: '2026-09-20', photoIds: [b.id, a.id] })
+        .expect(201);
+      expect(res.body.photos.map((p: { id: string }) => p.id)).toEqual([b.id, a.id]);
+      expect(res.body.photos[0]).toMatchObject({ width: 2, height: 1, url: b.url });
+
+      // 이미 다른 물건에 연결된 사진은 다시 쓸 수 없다
+      const again = await request(http)
+        .post('/api/found-items')
+        .set('Cookie', cookie)
+        .send({ category: 'ETC', keptAt: '행정실', foundDate: '2026-09-20', photoIds: [a.id] })
+        .expect(400);
+      expect(again.body.message).toBe('사진을 찾을 수 없습니다. 다시 올려 주세요');
     });
 
     it('맡긴 장소가 없으면 400', async () => {

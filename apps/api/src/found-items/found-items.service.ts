@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CATEGORY_LABEL, KEEPING_DAYS, type FoundItem as FoundItemDto } from '@findit/shared';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { CATEGORY_LABEL, ErrorCode, KEEPING_DAYS, type FoundItem as FoundItemDto } from '@findit/shared';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { AppException } from '../common/app.exception';
+import { Photo } from '../uploads/photo.entity';
+import { UploadsService } from '../uploads/uploads.service';
 import { FoundItem } from './found-item.entity';
 import type { CreateFoundItemDto } from './found-items.dto';
 
@@ -13,12 +16,18 @@ export function defaultTitle(dto: Pick<CreateFoundItemDto, 'title' | 'color' | '
 
 @Injectable()
 export class FoundItemsService {
-  constructor(@InjectRepository(FoundItem) private readonly items: Repository<FoundItem>) {}
+  constructor(
+    @InjectRepository(FoundItem) private readonly items: Repository<FoundItem>,
+    @InjectDataSource() private readonly ds: DataSource,
+  ) {}
 
+  /** 습득물을 만들고, 미리 올린 사진(photoIds)을 순서대로 연결한다. */
   async create(userId: string, dto: CreateFoundItemDto) {
     const now = Date.now();
-    const saved = await this.items.save(
-      this.items.create({
+    const photoIds = [...new Set(dto.photoIds ?? [])];
+    return this.ds.transaction(async (em) => {
+      const item = await em.save(
+        em.create(FoundItem, {
         title: defaultTitle(dto),
         category: dto.category,
         keptAt: dto.keptAt,
@@ -26,11 +35,24 @@ export class FoundItemsService {
         foundDate: dto.foundDate,
         color: dto.color || null,
         description: dto.description || null,
-        reporterId: userId,
-        expiresAt: new Date(now + KEEPING_DAYS * 86_400_000),
-      }),
-    );
-    return FoundItemsService.toDto(saved);
+          reporterId: userId,
+          expiresAt: new Date(now + KEEPING_DAYS * 86_400_000),
+        }),
+      );
+
+      const photos = photoIds.length
+        ? await em.find(Photo, { where: { id: In(photoIds), foundItemId: IsNull() } })
+        : [];
+      if (photos.length !== photoIds.length) {
+        throw new AppException(400, ErrorCode.VALIDATION_FAILED, '사진을 찾을 수 없습니다. 다시 올려 주세요');
+      }
+      for (const photo of photos) {
+        photo.foundItemId = item.id;
+        photo.sortOrder = photoIds.indexOf(photo.id);
+      }
+      item.photos = await em.save(photos);
+      return FoundItemsService.toDto(item);
+    });
   }
 
   static toDto(item: FoundItem): FoundItemDto {
@@ -47,7 +69,7 @@ export class FoundItemsService {
       reporterId: item.reporterId,
       createdAt: item.createdAt.toISOString(),
       expiresAt: item.expiresAt.toISOString(),
-      photos: [],
+      photos: [...(item.photos ?? [])].sort((a, b) => a.sortOrder - b.sortOrder).map(UploadsService.toDto),
     };
   }
 }
