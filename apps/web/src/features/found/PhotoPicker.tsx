@@ -1,16 +1,9 @@
 import { Plus, X } from 'lucide-react';
 import { useId, type ChangeEvent } from 'react';
-
-export const MAX_PHOTOS = 3;
-
-export interface LocalPhoto {
-  id: string;
-  file: File;
-  previewUrl: string;
-}
+import { MAX_PHOTOS, type UploadItem } from './usePhotoUploads';
 
 interface PhotoPickerProps {
-  photos: LocalPhoto[];
+  photos: UploadItem[];
   onAdd: (files: File[]) => void;
   onRemove: (id: string) => void;
 }
@@ -32,8 +25,22 @@ export function PhotoPicker({ photos, onAdd, onRemove }: PhotoPickerProps) {
       </p>
       <ul className="grid grid-cols-3 gap-2">
         {photos.map((p, i) => (
-          <li key={p.id} className="relative aspect-square overflow-hidden rounded-card bg-bg-3">
-            <img src={p.previewUrl} alt={`선택한 사진 ${i + 1}`} className="size-full object-cover" />
+          <li key={p.id} className="relative aspect-square overflow-hidden rounded-card bg-bg-3" data-status={p.status}>
+            <img
+              src={p.previewUrl}
+              alt={`선택한 사진 ${i + 1}`}
+              className={`size-full object-cover ${p.status === 'queued' || p.status === 'uploading' ? 'opacity-60' : ''}`}
+            />
+            {p.status === 'uploading' && (
+              <span className="absolute inset-x-0 bottom-0 bg-tx-1/50 py-0.5 text-center text-[11px] font-semibold text-bg-1">
+                {p.progress}%
+              </span>
+            )}
+            {p.status === 'error' && (
+              <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-err/75 px-1 text-center text-[11px] font-semibold text-bg-1">
+                업로드 실패
+              </span>
+            )}
             <button
               type="button"
               aria-label={`사진 ${i + 1} 삭제`}
