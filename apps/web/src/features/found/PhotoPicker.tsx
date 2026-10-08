@@ -1,4 +1,4 @@
-import { Plus, X } from 'lucide-react';
+import { Plus, RotateCw, X } from 'lucide-react';
 import { useId, type ChangeEvent } from 'react';
 import { MAX_PHOTOS, type UploadItem } from './usePhotoUploads';
 
@@ -6,10 +6,11 @@ interface PhotoPickerProps {
   photos: UploadItem[];
   onAdd: (files: File[]) => void;
   onRemove: (id: string) => void;
+  onRetry: (id: string) => void;
 }
 
 /** 사진 최대 3장 — 정사각형 썸네일 + 우상단 × + 마지막 칸 점선 [+ 추가] */
-export function PhotoPicker({ photos, onAdd, onRemove }: PhotoPickerProps) {
+export function PhotoPicker({ photos, onAdd, onRemove, onRetry }: PhotoPickerProps) {
   const inputId = useId();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -37,8 +38,18 @@ export function PhotoPicker({ photos, onAdd, onRemove }: PhotoPickerProps) {
               </span>
             )}
             {p.status === 'error' && (
-              <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-err/75 px-1 text-center text-[11px] font-semibold text-bg-1">
+              <span className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-err/75 px-1 text-center text-[11px] font-semibold text-bg-1">
                 업로드 실패
+                <button
+                  type="button"
+                  aria-label={`사진 ${i + 1} 다시 올리기`}
+                  title={p.error}
+                  onClick={() => onRetry(p.id)}
+                  className="flex items-center gap-1 rounded-chip bg-bg-1 px-2.5 py-1 text-[11px] font-bold text-err"
+                >
+                  <RotateCw size={12} aria-hidden />
+                  재시도
+                </button>
               </span>
             )}
             <button

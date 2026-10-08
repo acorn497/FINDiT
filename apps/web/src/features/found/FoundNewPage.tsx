@@ -102,7 +102,7 @@ export function FoundNewPage() {
     >
       <div className="flex flex-col gap-5">
         <div>
-          <PhotoPicker photos={uploads.items} onAdd={uploads.add} onRemove={uploads.remove} />
+          <PhotoPicker photos={uploads.items} onAdd={uploads.add} onRemove={uploads.remove} onRetry={uploads.retry} />
           <UploadProgress current={uploads.current} total={uploads.items.length} failed={uploads.failed} />
         </div>
 

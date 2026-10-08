@@ -107,11 +107,19 @@ export function usePhotoUploads({ compress = compressImage, upload = uploadPhoto
     commit();
   }, []);
 
+  /** 실패한 사진만 다시 줄 세운다 (나머지는 그대로) */
+  const retry = useCallback((id: string) => {
+    const target = itemsRef.current.find((it) => it.id === id);
+    if (!target || target.status !== 'error') return;
+    patch(id, { status: 'queued', progress: 0, error: undefined });
+  }, []);
+
   const active = items.findIndex((it) => it.status === 'uploading');
   return {
     items,
     add,
     remove,
+    retry,
     /** 진행 중인 사진의 순번(1부터)과 진행률 */
     current: active >= 0 ? { index: active + 1, total: items.length, progress: items[active].progress } : null,
     uploading: items.some((it) => it.status === 'queued' || it.status === 'uploading'),
