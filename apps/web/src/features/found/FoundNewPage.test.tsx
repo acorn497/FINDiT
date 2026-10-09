@@ -47,6 +47,90 @@ describe('FoundNewPage', () => {
     expect(screen.getByLabelText('사진 추가')).toBeInTheDocument();
   });
 
+  it('사진을 고르면 바로 올리고, 등록할 때 올린 사진 id 를 보낸다', async () => {
+    const { api } = setup();
+    vi.stubGlobal('Image', class {
+      naturalWidth = 3200;
+      naturalHeight = 2400;
+      onload?: () => void;
+      set src(_: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      () => ({ drawImage: vi.fn() }) as unknown as CanvasRenderingContext2D,
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb: BlobCallback) => cb(new Blob(['j'])));
+    class OkXHR {
+      upload = {};
+      status = 201;
+      response = { id: '11111111-1111-4111-8111-111111111111', url: '/api/uploads/x.jpg', width: 1600, height: 1200 };
+      onload?: () => void;
+      withCredentials = false;
+      open() {}
+      send() {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    vi.stubGlobal('XMLHttpRequest', OkXHR);
+
+    await userEvent.upload(screen.getByLabelText('사진 추가'), [image('a.jpg')]);
+    expect(await screen.findByText('업로드 완료 · 1장')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('radio', { name: '전자기기' }));
+    await userEvent.type(screen.getByLabelText('맡긴 장소'), '2학년 교무실');
+    await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
+    expect(await screen.findByText('습득물이 등록되었습니다')).toBeInTheDocument();
+    expect((api.calls.find((c) => c.path === '/found-items')?.body as { photoIds: string[] }).photoIds).toEqual([
+      '11111111-1111-4111-8111-111111111111',
+    ]);
+    vi.restoreAllMocks();
+  });
+
+  it('업로드가 끝나지 않았거나 실패한 사진이 있으면 등록하지 않는다', async () => {
+    const { api } = setup();
+    vi.stubGlobal('Image', class {
+      naturalWidth = 10;
+      naturalHeight = 10;
+      onload?: () => void;
+      set src(_: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      () => ({ drawImage: vi.fn() }) as unknown as CanvasRenderingContext2D,
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb: BlobCallback) => cb(new Blob(['j'])));
+    let finish: (() => void) | undefined;
+    class FailXHR {
+      upload = {};
+      status = 413;
+      response = { code: 'PAYLOAD_TOO_LARGE', message: '파일이 너무 큽니다' };
+      onload?: () => void;
+      withCredentials = false;
+      open() {}
+      send() {
+        finish = () => this.onload?.();
+      }
+    }
+    vi.stubGlobal('XMLHttpRequest', FailXHR);
+
+    await userEvent.click(screen.getByRole('radio', { name: '전자기기' }));
+    await userEvent.type(screen.getByLabelText('맡긴 장소'), '2학년 교무실');
+    await userEvent.upload(screen.getByLabelText('사진 추가'), [image('a.jpg')]);
+    await screen.findByText(/업로드 중\.\.\. 1장 중 1번째/);
+    await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('사진을 올리는 중이에요');
+
+    finish!();
+    expect(await screen.findByText('1장을 올리지 못했습니다')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '사진 1 다시 올리기' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('올리지 못한 사진이 있어요');
+    expect(api.calls.some((c) => c.path === '/found-items')).toBe(false);
+    vi.restoreAllMocks();
+  });
+
   it('[등록하기]는 비어 있는 칸의 오류를 한 번에 드러낸다', async () => {
     const { api } = setup();
     await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
