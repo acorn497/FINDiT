@@ -24,7 +24,10 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-findit}:${POSTGRES_PASSWORD:-findit}@db:5432/${POSTGRES_DB:-findit}
       PORT: 3000
+      UPLOAD_DIR: /app/uploads
       TZ: Asia/Seoul
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -68,3 +71,4 @@ services:
 
 volumes:
   db-data:
+  uploads:

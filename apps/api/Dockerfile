@@ -25,6 +25,11 @@ COPY --from=build /repo/packages/shared/package.json ./packages/shared/package.j
 COPY --from=build /repo/packages/shared/dist ./packages/shared/dist
 COPY --from=build /repo/apps/api/package.json ./apps/api/package.json
 COPY --from=build /repo/apps/api/dist ./apps/api/dist
+# 업로드 볼륨 — 처음 만들어질 때 이 폴더의 소유자(node)를 물려받는다
+RUN mkdir -p /app/uploads && chown node:node /app/uploads
+USER node
 WORKDIR /app/apps/api
+ENV UPLOAD_DIR=/app/uploads PORT=3000
 EXPOSE 3000
+HEALTHCHECK --interval=5s --timeout=3s --retries=30 CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
 CMD ["node", "dist/main.js"]
