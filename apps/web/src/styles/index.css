@@ -9,6 +9,7 @@
   body {
     @apply bg-bg-2 text-tx-1 font-sans antialiased;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   button {

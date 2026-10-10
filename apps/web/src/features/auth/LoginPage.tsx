@@ -108,7 +108,7 @@ export function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-bg-2">
+    <main className="min-h-dvh bg-bg-2">
       <div className="mx-auto flex w-full max-w-[390px] flex-col px-6 pb-10 pt-16">
         <Logo className="text-[32px]" />
         <p className="mt-3 text-[15px] leading-relaxed text-tx-2">
