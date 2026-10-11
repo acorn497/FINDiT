@@ -10,9 +10,12 @@
 ## 실행
 
 ```bash
-docker compose up --build -d     # db · api · web
+docker compose up --build -d     # db · api · web (마이그레이션·시드 자동 실행)
 open http://localhost:8080
 ```
+
+- 사진은 `uploads` 볼륨(api 컨테이너의 `/app/uploads`)에, DB 는 `db-data` 볼륨에 남는다.
+- `.env` 없이 기본값으로 뜬다. 바꾸려면 `cp .env.example .env`.
 
 ### 시드 계정 (비밀번호 모두 `findit1234`)
 
