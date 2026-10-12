@@ -1,12 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { CATEGORY_LABEL, ErrorCode, KEEPING_DAYS, type FoundItem as FoundItemDto } from '@findit/shared';
+import {
+  CATEGORY_LABEL,
+  ErrorCode,
+  KEEPING_DAYS,
+  type FoundItem as FoundItemDto,
+  type FoundItemListResponse,
+  type FoundItemSummary,
+} from '@findit/shared';
 import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { AppException } from '../common/app.exception';
+import { decodeCursor, paginate } from '../common/cursor';
 import { Photo } from '../uploads/photo.entity';
 import { UploadsService } from '../uploads/uploads.service';
 import { FoundItem } from './found-item.entity';
 import type { CreateFoundItemDto } from './found-items.dto';
+import type { FoundItemListQuery } from './found-items.query';
 
 /** 이름을 적지 않았으면 "색상 + 종류"로 만든다 (예: 갈색 지갑·카드) */
 export function defaultTitle(dto: Pick<CreateFoundItemDto, 'title' | 'color' | 'category'>) {
@@ -55,6 +64,66 @@ export class FoundItemsService {
     });
   }
 
+  /** 목록 — 조건 + 커서(created_at DESC, id DESC), 조건에 맞는 전체 건수 */
+  async list(q: FoundItemListQuery): Promise<FoundItemListResponse> {
+    const base = this.items.createQueryBuilder('f');
+    if (q.category) base.andWhere('f.category = :category', { category: q.category });
+    if (q.status) base.andWhere('f.status = :status', { status: q.status });
+    if (q.keyword) {
+      base.andWhere('(f.title ILIKE :kw OR f.description ILIKE :kw)', { kw: `%${escapeLike(q.keyword)}%` });
+    }
+    if (q.place) {
+      base.andWhere('(f.kept_at ILIKE :place OR f.found_place ILIKE :place)', { place: `%${escapeLike(q.place)}%` });
+    }
+
+    const total = await base.clone().getCount();
+
+    const page = base.clone();
+    if (q.cursor) {
+      const c = decodeCursor(q.cursor);
+      page.andWhere('(f.created_at, f.id) < (:cAt, :cId)', { cAt: c.createdAt, cId: c.id });
+    }
+    const rows = await page
+      .orderBy('f.created_at', 'DESC')
+      .addOrderBy('f.id', 'DESC')
+      .take(q.limit + 1)
+      .getMany();
+
+    const { items, nextCursor } = paginate(rows, q.limit);
+    const thumbs = await this.thumbnails(items.map((i) => i.id));
+    return { items: items.map((i) => FoundItemsService.toSummary(i, thumbs.get(i.id) ?? null)), nextCursor, total };
+  }
+
+  /** 물건별 첫 사진 */
+  async thumbnails(ids: string[]) {
+    const map = new Map<string, Photo>();
+    if (ids.length === 0) return map;
+    const photos = await this.ds
+      .getRepository(Photo)
+      .createQueryBuilder('p')
+      .distinctOn(['p.found_item_id'])
+      .where('p.found_item_id IN (:...ids)', { ids })
+      .orderBy('p.found_item_id')
+      .addOrderBy('p.sort_order', 'ASC')
+      .getMany();
+    photos.forEach((p) => map.set(p.foundItemId!, p));
+    return map;
+  }
+
+  static toSummary(item: FoundItem, thumbnail: Photo | null): FoundItemSummary {
+    return {
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      keptAt: item.keptAt,
+      foundPlace: item.foundPlace,
+      foundDate: item.foundDate,
+      status: item.status,
+      createdAt: item.createdAt.toISOString(),
+      thumbnail: thumbnail ? UploadsService.toDto(thumbnail) : null,
+    };
+  }
+
   static toDto(item: FoundItem): FoundItemDto {
     return {
       id: item.id,
@@ -72,4 +141,9 @@ export class FoundItemsService {
       photos: [...(item.photos ?? [])].sort((a, b) => a.sortOrder - b.sortOrder).map(UploadsService.toDto),
     };
   }
+}
+
+/** ILIKE 패턴의 특수 문자(%, _, \\) 를 문자 그대로 찾도록 이스케이프 */
+export function escapeLike(s: string) {
+  return s.replace(/[\\%_]/g, (m) => `\\${m}`);
 }

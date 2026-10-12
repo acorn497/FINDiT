@@ -192,3 +192,30 @@ export interface FoundItem {
   expiresAt: string;
   photos: Photo[];
 }
+
+// ── 목록 · 커서 ─────────────────────────────────────────
+/** 커서 페이지 — 마지막 페이지의 nextCursor 는 null */
+export interface CursorPage<T> {
+  items: T[];
+  nextCursor: string | null;
+}
+
+/** 습득물 목록 기본 페이지 크기 */
+export const FOUND_PAGE_SIZE = 6;
+
+export interface FoundItemSummary {
+  id: string;
+  title: string;
+  category: Category;
+  keptAt: string;
+  foundPlace: string | null;
+  foundDate: string;
+  status: FoundItemStatus;
+  createdAt: string;
+  thumbnail: Photo | null;
+}
+
+export interface FoundItemListResponse extends CursorPage<FoundItemSummary> {
+  /** 조건에 맞는 전체 건수 */
+  total: number;
+}
