@@ -8,7 +8,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('AppRoutes', () => {
   it('습득물 경로는 레이아웃(탭·사이드 메뉴) 안에서 보이고 해당 탭이 활성이다', async () => {
-    renderApp(<AppRoutes />, { route: '/found' });
+    renderApp(<AppRoutes />, { route: '/found', api: { 'GET /found-items': [200, { items: [], nextCursor: null, total: 0 }] } });
     expect(await screen.findByRole('heading', { name: '습득물 목록' })).toBeInTheDocument();
     expect(navs()).toHaveLength(2);
     for (const link of screen.getAllByRole('link', { name: '습득물' })) {
