@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
+import { seedFoundItems } from './found-items.seed';
 import { seedUsers } from './users.seed';
 
 /**
@@ -9,5 +10,6 @@ import { seedUsers } from './users.seed';
 export async function runSeed(ds: DataSource) {
   const logger = new Logger('Seed');
   const users = await seedUsers(ds);
-  logger.log(`users +${users}`);
+  const found = await seedFoundItems(ds);
+  logger.log(`users +${users} · found_items +${found}`);
 }
