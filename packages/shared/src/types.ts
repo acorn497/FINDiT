@@ -219,3 +219,37 @@ export interface FoundItemListResponse extends CursorPage<FoundItemSummary> {
   /** 조건에 맞는 전체 건수 */
   total: number;
 }
+
+// ── 수령 신청 ───────────────────────────────────────────
+export const ClaimStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type ClaimStatus = (typeof ClaimStatus)[keyof typeof ClaimStatus];
+
+export const CLAIM_STATUS_LABEL: Record<ClaimStatus, string> = {
+  PENDING: '승인 대기',
+  APPROVED: '승인',
+  REJECTED: '거절',
+  CANCELLED: '취소',
+};
+
+export interface MyClaim {
+  id: string;
+  status: ClaimStatus;
+  rejectReason: string | null;
+  createdAt: string;
+}
+
+/** GET /found-items/:id */
+export interface FoundItemDetail extends FoundItem {
+  /** 지금 [내 물건인 것 같아요]를 누를 수 있는지 */
+  canClaim: boolean;
+  /** 누를 수 없을 때 이유 (전달 완료·기간 만료·내가 등록함) */
+  claimBlockedReason: string | null;
+  /** 내 수령 신청 중 가장 최근 것 */
+  myClaim: MyClaim | null;
+  isMine: boolean;
+}

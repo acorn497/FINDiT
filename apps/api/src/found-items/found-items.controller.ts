@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import type { AuthUser } from '@findit/shared';
 import { CurrentUser } from '../common/decorators';
 import { CreateFoundItemDto } from './found-items.dto';
@@ -13,6 +13,25 @@ export class FoundItemsController {
   @Get()
   list(@Query() q: FoundItemListQuery) {
     return this.service.list(q);
+  }
+
+  /** 상세 — 사진 전체, canClaim, 내 신청 상태 */
+  @Get(':id')
+  detail(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.service.detail(id, user.id);
+  }
+
+  /** 수령 신청 → CHECKING. 전달 완료·기간 만료면 409 */
+  @Post(':id/claims')
+  @HttpCode(201)
+  claim(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.service.claim(id, user.id);
+  }
+
+  /** 신청 취소. 남은 신청이 없으면 KEEPING 복귀 */
+  @Delete(':id/claims')
+  cancelClaim(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.service.cancelClaim(id, user.id);
   }
 
   @Post()

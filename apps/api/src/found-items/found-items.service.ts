@@ -5,10 +5,12 @@ import {
   ErrorCode,
   KEEPING_DAYS,
   type FoundItem as FoundItemDto,
+  type FoundItemDetail,
   type FoundItemListResponse,
   type FoundItemSummary,
 } from '@findit/shared';
 import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { CLAIM_BLOCKED, ClaimsService, notFound } from '../claims/claims.service';
 import { AppException } from '../common/app.exception';
 import { decodeCursor, paginate } from '../common/cursor';
 import { Photo } from '../uploads/photo.entity';
@@ -28,7 +30,40 @@ export class FoundItemsService {
   constructor(
     @InjectRepository(FoundItem) private readonly items: Repository<FoundItem>,
     @InjectDataSource() private readonly ds: DataSource,
+    private readonly claims: ClaimsService,
   ) {}
+
+  /** 상세 — 사진 전체, 신청 가능 여부, 내 신청 상태 */
+  async detail(id: string, userId: string): Promise<FoundItemDetail> {
+    if (!UUID_RE.test(id)) throw notFound();
+    const item = await this.items.findOne({ where: { id }, relations: { photos: true } });
+    if (!item) throw notFound();
+    const mine = await this.claims.latestOf(id, userId);
+    const myPending = mine?.status === 'PENDING';
+    const isMine = item.reporterId === userId;
+    const blocked = CLAIM_BLOCKED[item.status] ?? (isMine ? '내가 등록한 물건입니다' : null);
+    return {
+      ...FoundItemsService.toDto(item),
+      canClaim: !blocked && !myPending,
+      claimBlockedReason: blocked,
+      myClaim: mine
+        ? { id: mine.id, status: mine.status, rejectReason: mine.rejectReason, createdAt: mine.createdAt.toISOString() }
+        : null,
+      isMine,
+    };
+  }
+
+  async claim(id: string, userId: string) {
+    if (!UUID_RE.test(id)) throw notFound();
+    await this.claims.create(id, userId);
+    return this.detail(id, userId);
+  }
+
+  async cancelClaim(id: string, userId: string) {
+    if (!UUID_RE.test(id)) throw notFound();
+    await this.claims.cancel(id, userId);
+    return this.detail(id, userId);
+  }
 
   /** 습득물을 만들고, 미리 올린 사진(photoIds)을 순서대로 연결한다. */
   async create(userId: string, dto: CreateFoundItemDto) {
@@ -142,6 +177,8 @@ export class FoundItemsService {
     };
   }
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** ILIKE 패턴의 특수 문자(%, _, \\) 를 문자 그대로 찾도록 이스케이프 */
 export function escapeLike(s: string) {
