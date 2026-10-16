@@ -1,4 +1,4 @@
-import type { Category, CreateFoundItemBody, FoundItem, FoundItemListResponse } from '@findit/shared';
+import type { Category, CreateFoundItemBody, FoundItem, FoundItemDetail, FoundItemListResponse } from '@findit/shared';
 import { api } from '../../shared/api/client';
 
 export interface FoundListParams {
@@ -19,4 +19,7 @@ export const foundApi = {
     return api<FoundItemListResponse>(`/found-items${qs ? `?${qs}` : ''}`, { signal });
   },
   create: (body: CreateFoundItemBody) => api<FoundItem>('/found-items', { body }),
+  detail: (id: string, signal?: AbortSignal) => api<FoundItemDetail>(`/found-items/${id}`, { signal }),
+  claim: (id: string) => api<FoundItemDetail>(`/found-items/${id}/claims`, { method: 'POST' }),
+  cancelClaim: (id: string) => api<FoundItemDetail>(`/found-items/${id}/claims`, { method: 'DELETE' }),
 };

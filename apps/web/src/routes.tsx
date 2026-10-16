@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router';
 import { LoginPage } from './features/auth/LoginPage';
 import { GuestOnly, RequireAuth } from './features/auth/RequireAuth';
+import { FoundDetailPage } from './features/found/FoundDetailPage';
 import { FoundListPage } from './features/found/FoundListPage';
 import { FoundNewPage } from './features/found/FoundNewPage';
 import { LostReportNewPage } from './features/lost/LostReportNewPage';
@@ -23,7 +24,7 @@ export function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route index element={<PlaceholderPage title="홈" />} />
           <Route path="found" element={<FoundListPage />} />
-          <Route path="found/:id" element={<PlaceholderPage title="습득물 상세" />} />
+          <Route path="found/:id" element={<FoundDetailPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="matches" element={<PlaceholderPage title="매칭 후보" />} />
           <Route path="me/reports" element={<PlaceholderPage title="내 신고 관리" />} />
