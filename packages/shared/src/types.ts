@@ -253,3 +253,46 @@ export interface FoundItemDetail extends FoundItem {
   myClaim: MyClaim | null;
   isMine: boolean;
 }
+
+// ── 매칭 후보 ───────────────────────────────────────────
+/** 매칭 후보 최소 점수 · 개수 */
+export const MATCH_MIN_SCORE = 0.35;
+export const MATCH_TOP_N = 5;
+
+export interface MatchCandidate {
+  item: FoundItemSummary & { color: string | null; description: string | null };
+  /** 0~1 */
+  score: number;
+  /** 항목별 일치 여부 (종류·장소·날짜·색상) */
+  matches: { category: boolean; place: boolean; date: boolean; color: boolean };
+}
+
+export interface MatchesResponse {
+  lostReport: LostReport;
+  candidates: MatchCandidate[];
+}
+
+// ── 내 신고 관리 ────────────────────────────────────────
+export type ReportKind = 'lost' | 'found';
+
+export interface MyReportItem {
+  kind: ReportKind;
+  id: string;
+  /** 습득물은 물건 이름, 분실 신고는 "색상 + 종류" */
+  title: string;
+  category: Category;
+  place: string;
+  date: string;
+  status: LostReportStatus | FoundItemStatus;
+  createdAt: string;
+  thumbnail: Photo | null;
+  /** 분실 신고의 현재 후보 수 (습득물은 null) */
+  candidateCount: number | null;
+}
+
+export type MyReportsResponse = CursorPage<MyReportItem>;
+
+/** 분실 신고를 부르는 이름 — "갈색 지갑·카드" */
+export function lostReportTitle(r: { color: string; category: Category }): string {
+  return [r.color, CATEGORY_LABEL[r.category]].filter(Boolean).join(' ');
+}
