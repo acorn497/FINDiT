@@ -5,6 +5,8 @@ import { FoundDetailPage } from './features/found/FoundDetailPage';
 import { FoundListPage } from './features/found/FoundListPage';
 import { FoundNewPage } from './features/found/FoundNewPage';
 import { LostReportNewPage } from './features/lost/LostReportNewPage';
+import { MatchesPage } from './features/match/MatchesPage';
+import { MyReportsPage } from './features/reports/MyReportsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -26,8 +28,8 @@ export function AppRoutes() {
           <Route path="found" element={<FoundListPage />} />
           <Route path="found/:id" element={<FoundDetailPage />} />
           <Route path="register" element={<RegisterPage />} />
-          <Route path="matches" element={<PlaceholderPage title="매칭 후보" />} />
-          <Route path="me/reports" element={<PlaceholderPage title="내 신고 관리" />} />
+          <Route path="matches" element={<MatchesPage />} />
+          <Route path="me/reports" element={<MyReportsPage />} />
           <Route path="notifications" element={<PlaceholderPage title="알림" />} />
           <Route path="admin" element={<PlaceholderPage title="관리자" />} />
         </Route>
