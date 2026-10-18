@@ -20,7 +20,11 @@ export function renderWithRouter(ui: ReactElement, { route = '/' }: { route?: st
  */
 export function renderApp(
   ui: ReactElement,
-  { route = '/', user = STUDENT, api = {} }: { route?: string; user?: AuthUser | null; api?: Routes } = {},
+  {
+    route = '/',
+    user = STUDENT,
+    api = {},
+  }: { route?: string | { pathname: string; search?: string; state?: unknown }; user?: AuthUser | null; api?: Routes } = {},
 ) {
   const mocked = mockApi({
     'GET /auth/me': user ? [200, user] : [401, { code: 'UNAUTHENTICATED', message: '로그인이 필요합니다' }],
