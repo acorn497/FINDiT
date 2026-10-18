@@ -4,9 +4,8 @@ import { join } from 'node:path';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { config } from '../src/config';
-import { runSeed } from '../src/database/seeds/seed';
 import { createTestApp } from './app';
-import { loginAs } from './helpers';
+import { loginAs, resetAndSeed } from './helpers';
 import { tinyPng } from './images';
 
 describe('POST /api/uploads', () => {
@@ -19,7 +18,7 @@ describe('POST /api/uploads', () => {
     app = await createTestApp();
     http = app.getHttpServer();
     ds = app.get(DataSource);
-    await runSeed(ds);
+    await resetAndSeed(app);
     cookie = await loginAs(app, 's2103@gbsw.hs.kr');
   });
 

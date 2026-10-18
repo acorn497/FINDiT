@@ -1,9 +1,8 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
-import { runSeed } from '../src/database/seeds/seed';
 import { createTestApp } from './app';
-import { loginAs } from './helpers';
+import { loginAs, resetAndSeed } from './helpers';
 
 describe('인증 /api/auth', () => {
   let app: INestApplication;
@@ -14,7 +13,7 @@ describe('인증 /api/auth', () => {
     app = await createTestApp();
     http = app.getHttpServer();
     ds = app.get(DataSource);
-    await runSeed(ds);
+    await resetAndSeed(app);
   });
 
   afterAll(async () => {

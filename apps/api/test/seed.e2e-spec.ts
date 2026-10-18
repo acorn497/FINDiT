@@ -8,7 +8,7 @@ import { config } from '../src/config';
 import { runSeed } from '../src/database/seeds/seed';
 import { SEED_PASSWORD } from '../src/database/seeds/users.seed';
 import { createTestApp } from './app';
-import { loginAs } from './helpers';
+import { loginAs, resetAndSeed } from './helpers';
 
 describe('시드', () => {
   let app: INestApplication;
@@ -16,7 +16,7 @@ describe('시드', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    ds = app.get(DataSource);
+    ds = await resetAndSeed(app);
   });
 
   afterAll(async () => {

@@ -11,9 +11,9 @@ export function AppLayout() {
     <div className="min-h-dvh bg-bg-2">
       <SideNav />
       <div className="pb-20 md:pb-0 md:pl-60">
-        <div className="mx-auto w-full max-w-[1100px]">
+        <main className="mx-auto w-full max-w-[1100px]">
           <Outlet />
-        </div>
+        </main>
       </div>
       <TabBar />
     </div>

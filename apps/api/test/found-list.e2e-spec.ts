@@ -1,9 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { DataSource } from 'typeorm';
-import { runSeed } from '../src/database/seeds/seed';
 import { createTestApp } from './app';
-import { loginAs } from './helpers';
+import { loginAs, resetAndSeed } from './helpers';
 
 describe('GET /api/found-items — 조건', () => {
   let app: INestApplication;
@@ -14,7 +12,7 @@ describe('GET /api/found-items — 조건', () => {
   beforeAll(async () => {
     app = await createTestApp();
     http = app.getHttpServer();
-    await runSeed(app.get(DataSource));
+    await resetAndSeed(app);
     cookie = await loginAs(app, 's2103@gbsw.hs.kr');
     const make = (body: object) => request(http).post('/api/found-items').set('Cookie', cookie).send(body).expect(201);
     await make({ category: 'WALLET_CARD', keptAt: '본관 1층 행정실', foundDate: '2026-10-01', title: `${tag} 갈색 지갑`, description: '모서리 100%_긁힘' });

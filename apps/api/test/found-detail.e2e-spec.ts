@@ -2,9 +2,8 @@ import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { SEED_FOUND } from '../src/database/seeds/found-items.seed';
-import { runSeed } from '../src/database/seeds/seed';
 import { createTestApp } from './app';
-import { loginAs } from './helpers';
+import { loginAs, resetAndSeed } from './helpers';
 
 describe('습득물 상세 · 수령 신청', () => {
   let app: INestApplication;
@@ -21,7 +20,7 @@ describe('습득물 상세 · 수령 신청', () => {
     app = await createTestApp();
     http = app.getHttpServer();
     ds = app.get(DataSource);
-    await runSeed(ds);
+    await resetAndSeed(app);
     student = await loginAs(app, 's2217@gbsw.hs.kr');
     finder = await loginAs(app, 's2103@gbsw.hs.kr');
   });
@@ -108,7 +107,7 @@ describe('커서 페이지네이션 — 중간에 새 등록이 끼어들어도'
   beforeAll(async () => {
     app = await createTestApp();
     http = app.getHttpServer();
-    await runSeed(app.get(DataSource));
+    await resetAndSeed(app);
     cookie = await loginAs(app, 's2103@gbsw.hs.kr');
   });
 

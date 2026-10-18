@@ -1,11 +1,9 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { DataSource } from 'typeorm';
 import { SEED_LOST } from '../src/database/seeds/flow.seed';
 import { SEED_FOUND } from '../src/database/seeds/found-items.seed';
-import { runSeed } from '../src/database/seeds/seed';
 import { createTestApp } from './app';
-import { loginAs } from './helpers';
+import { loginAs, resetAndSeed } from './helpers';
 
 describe('매칭 후보 · 내 신고 목록 (기본형)', () => {
   let app: INestApplication;
@@ -15,7 +13,7 @@ describe('매칭 후보 · 내 신고 목록 (기본형)', () => {
   beforeAll(async () => {
     app = await createTestApp();
     http = app.getHttpServer();
-    await runSeed(app.get(DataSource));
+    await resetAndSeed(app);
     student = await loginAs(app, 's2217@gbsw.hs.kr');
   });
 

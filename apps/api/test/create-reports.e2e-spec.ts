@@ -1,10 +1,8 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { DataSource } from 'typeorm';
 import { todayInSeoul } from '../src/common/dates';
-import { runSeed } from '../src/database/seeds/seed';
 import { createTestApp } from './app';
-import { loginAs } from './helpers';
+import { loginAs, resetAndSeed } from './helpers';
 import { tinyPng } from './images';
 
 const tomorrow = () => new Date(Date.parse(`${todayInSeoul()}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
@@ -17,7 +15,7 @@ describe('분실 신고 · 습득물 생성', () => {
   beforeAll(async () => {
     app = await createTestApp();
     http = app.getHttpServer();
-    await runSeed(app.get(DataSource));
+    await resetAndSeed(app);
     cookie = await loginAs(app, 's2217@gbsw.hs.kr');
   });
 

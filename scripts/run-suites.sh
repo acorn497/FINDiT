@@ -27,6 +27,7 @@ guard() {
 run "테스트 표식 검사" guard
 run "FE 단위 (Vitest, statements ≥70%)" npm run test:cov --workspace @findit/web
 run "BE 단위 + e2e (Jest, statements ≥80%)" npm run test:cov --workspace @findit/api
+run "E2E (Playwright · 390×844 / 1280×800)" npx playwright test -c apps/web/e2e/playwright.config.ts
 
 echo
 echo "━━━━━━━━ 결과 ━━━━━━━━"
