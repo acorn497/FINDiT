@@ -17,10 +17,11 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-/** 로그인 화면 — 이미 로그인했다면 홈으로 */
+/** 로그인 화면 — 이미 로그인했다면(또는 방금 로그인했다면) 가려던 주소로 */
 export function GuestOnly() {
   const { status } = useAuth();
+  const from = (useLocation().state as { from?: string } | null)?.from ?? '/';
   if (status === 'loading') return <LoadingScreen message="로그인 정보를 확인하고 있어요" />;
-  if (status === 'authed') return <Navigate to="/" replace />;
+  if (status === 'authed') return <Navigate to={from} replace />;
   return <Outlet />;
 }

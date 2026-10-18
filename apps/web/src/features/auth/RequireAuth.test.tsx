@@ -53,6 +53,13 @@ describe('경로 보호', () => {
     expect(await screen.findByText('보호된 화면 — 이지우')).toBeInTheDocument();
   });
 
+  it('로그인 화면에서 로그인하면 가려던 주소로 (홈으로 새지 않는다)', async () => {
+    renderApp(tree, {
+      route: { pathname: '/login', state: { from: '/me/reports' } },
+    });
+    expect(await screen.findByText('보호된 화면 — 이지우')).toBeInTheDocument();
+  });
+
   it('이미 로그인했으면 /login 은 홈으로', async () => {
     renderApp(tree, { route: '/login' });
     expect(await screen.findByText('홈')).toBeInTheDocument();
