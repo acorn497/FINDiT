@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FoundItem } from '../found-items/found-item.entity';
-import { FoundItemsModule } from '../found-items/found-items.module';
 import { LostReport } from '../lost-reports/lost-report.entity';
+import { MatchExclusion } from './match-exclusion.entity';
 import { MatchesController } from './matches.controller';
 import { MatchesService } from './matches.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LostReport, FoundItem]), FoundItemsModule],
+  imports: [TypeOrmModule.forFeature([LostReport, FoundItem, MatchExclusion])],
   controllers: [MatchesController],
   providers: [MatchesService],
   exports: [MatchesService],

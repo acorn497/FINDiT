@@ -260,7 +260,7 @@ export const MATCH_MIN_SCORE = 0.35;
 export const MATCH_TOP_N = 5;
 
 export interface MatchCandidate {
-  item: FoundItemSummary & { color: string | null; description: string | null };
+  item: FoundItemSummary & { color: string | null; description: string | null; photos: Photo[] };
   /** 0~1 */
   score: number;
   /** 항목별 일치 여부 (종류·장소·날짜·색상) */
