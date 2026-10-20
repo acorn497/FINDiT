@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { ClaimStatus, ErrorCode, FoundItemStatus } from '@findit/shared';
 import { DataSource, type EntityManager } from 'typeorm';
 import { AppException } from '../common/app.exception';
+import { AppEvents } from '../common/events';
 import { FoundItem } from '../found-items/found-item.entity';
 import { Claim } from './claim.entity';
 
@@ -22,11 +23,14 @@ export async function lockItem(em: EntityManager, id: string) {
 
 @Injectable()
 export class ClaimsService {
-  constructor(@InjectDataSource() private readonly ds: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly ds: DataSource,
+    private readonly events: AppEvents,
+  ) {}
 
   /** 수령 신청 — 물건은 CHECKING 이 된다. 전달 완료·기간 만료면 409 */
   async create(itemId: string, userId: string) {
-    return this.ds.transaction(async (em) => {
+    const { claim, item } = await this.ds.transaction(async (em) => {
       const item = await lockItem(em, itemId);
       const blocked = CLAIM_BLOCKED[item.status];
       if (blocked) throw new AppException(409, ErrorCode.CONFLICT, blocked);
@@ -39,13 +43,15 @@ export class ClaimsService {
       if (item.status !== FoundItemStatus.CHECKING) {
         await em.update(FoundItem, { id: itemId }, { status: FoundItemStatus.CHECKING });
       }
-      return claim;
+      return { claim, item };
     });
+    await this.events.emit('found-item.status-changed', { id: item.id, category: item.category });
+    return claim;
   }
 
   /** 신청 취소 — 남은 신청이 없으면 KEEPING 으로 되돌린다 */
   async cancel(itemId: string, userId: string) {
-    return this.ds.transaction(async (em) => {
+    const { claim, item } = await this.ds.transaction(async (em) => {
       const item = await lockItem(em, itemId);
       const claim = await em.findOne(Claim, { where: { foundItemId: itemId, claimantId: userId, status: ClaimStatus.PENDING } });
       if (!claim) throw new AppException(404, ErrorCode.NOT_FOUND, '취소할 수령 신청이 없습니다');
@@ -56,8 +62,10 @@ export class ClaimsService {
       if (left === 0 && item.status === FoundItemStatus.CHECKING) {
         await em.update(FoundItem, { id: itemId }, { status: FoundItemStatus.KEEPING });
       }
-      return claim;
+      return { claim, item };
     });
+    await this.events.emit('found-item.status-changed', { id: item.id, category: item.category });
+    return claim;
   }
 
   /** 내 신청 중 가장 최근 것 */

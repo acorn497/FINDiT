@@ -37,16 +37,25 @@ describe('분실 신고 · 습득물 생성', () => {
       await request(http).post('/api/lost-reports').send(body).expect(401);
     });
 
-    it('만들면 OPEN 상태로 돌려준다 (앞뒤 공백 제거)', async () => {
+    it('만들면 앞뒤 공백을 지우고, 후보가 있으면 바로 MATCHED', async () => {
       const res = await request(http).post('/api/lost-reports').set('Cookie', cookie).send(body).expect(201);
       expect(res.body).toMatchObject({
         category: 'WALLET_CARD',
         lostPlace: '본관 3층 복도',
         lostDate: '2026-09-21',
         timeSlot: 'LUNCH',
-        status: 'OPEN',
+        status: 'MATCHED',
       });
       expect(res.body.id).toMatch(/^[0-9a-f-]{36}$/);
+    });
+
+    it('후보가 없으면 OPEN (찾는 중)', async () => {
+      const res = await request(http)
+        .post('/api/lost-reports')
+        .set('Cookie', cookie)
+        .send({ category: 'STATIONERY', lostPlace: '별관 5층 음악실', lostDate: '2026-10-30', color: '주황' })
+        .expect(201);
+      expect(res.body.status).toBe('OPEN');
     });
 
     it('시간대를 비우면 UNKNOWN', async () => {

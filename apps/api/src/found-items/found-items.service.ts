@@ -13,6 +13,7 @@ import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { CLAIM_BLOCKED, ClaimsService, notFound } from '../claims/claims.service';
 import { AppException } from '../common/app.exception';
 import { decodeCursor, paginate } from '../common/cursor';
+import { AppEvents } from '../common/events';
 import { Photo } from '../uploads/photo.entity';
 import { UploadsService } from '../uploads/uploads.service';
 import { FoundItem } from './found-item.entity';
@@ -31,6 +32,7 @@ export class FoundItemsService {
     @InjectRepository(FoundItem) private readonly items: Repository<FoundItem>,
     @InjectDataSource() private readonly ds: DataSource,
     private readonly claims: ClaimsService,
+    private readonly events: AppEvents,
   ) {}
 
   /** 상세 — 사진 전체, 신청 가능 여부, 내 신청 상태 */
@@ -69,7 +71,7 @@ export class FoundItemsService {
   async create(userId: string, dto: CreateFoundItemDto) {
     const now = Date.now();
     const photoIds = [...new Set(dto.photoIds ?? [])];
-    return this.ds.transaction(async (em) => {
+    const created = await this.ds.transaction(async (em) => {
       const item = await em.save(
         em.create(FoundItem, {
         title: defaultTitle(dto),
@@ -97,6 +99,9 @@ export class FoundItemsService {
       item.photos = await em.save(photos);
       return FoundItemsService.toDto(item);
     });
+    // 같은 종류의 분실 신고에 새 후보가 생겼을 수 있다
+    await this.events.emit('found-item.created', { id: created.id, category: created.category });
+    return created;
   }
 
   /** 목록 — 조건 + 커서(created_at DESC, id DESC), 조건에 맞는 전체 건수 */
