@@ -1,4 +1,6 @@
-import { ImageOff } from 'lucide-react';
+import type { MatchCandidate } from '@findit/shared';
+import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useAsync } from '../../shared/hooks/useAsync';
 import { AppBar } from '../../shared/layout/AppBar';
@@ -6,8 +8,9 @@ import { Button } from '../../shared/ui/Button';
 import { Spinner } from '../../shared/ui/Spinner';
 import { StateView } from '../../shared/ui/StateView';
 import { matchApi } from './api';
+import { PinnedReport } from './PinnedReport';
 
-/** ⑥ 매칭 후보 — 지금은 후보를 단순 세로 목록으로 보여 준다 (좌우 비교는 다음 단계) */
+/** ⑥ 매칭 후보 — 내 분실 신고를 위에 고정하고 후보를 하나씩 넘겨 본다 */
 export function MatchesPage() {
   const [params] = useSearchParams();
   const lostReportId = params.get('lostReportId');
@@ -29,16 +32,21 @@ export function MatchesPage() {
       </>
     );
   }
-  return <MatchList lostReportId={lostReportId} />;
+  return <MatchBrowser lostReportId={lostReportId} />;
 }
 
-function MatchList({ lostReportId }: { lostReportId: string }) {
+function MatchBrowser({ lostReportId }: { lostReportId: string }) {
   const res = useAsync((signal) => matchApi.list(lostReportId, signal), [lostReportId]);
+  const [index, setIndex] = useState(0);
+  const candidates: MatchCandidate[] = res.status === 'ready' ? res.data.candidates : [];
+
+  useEffect(() => setIndex(0), [lostReportId]);
+  const current = candidates[Math.min(index, candidates.length - 1)];
 
   return (
     <>
       <AppBar title="매칭 후보" back />
-      <section className="px-4 py-4">
+      <section className="px-4 pb-6">
         {res.status === 'loading' && (
           <div role="status" className="flex justify-center py-16">
             <Spinner />
@@ -48,36 +56,57 @@ function MatchList({ lostReportId }: { lostReportId: string }) {
         {res.status === 'error' && (
           <StateView kind="error" title="후보를 불러오지 못했습니다" action={<Button onClick={res.retry}>다시 시도</Button>} />
         )}
-        {res.status === 'ready' && res.data.candidates.length === 0 && (
-          <StateView kind="empty" title="아직 비슷한 습득물이 없습니다" description="새로 등록되면 알려 드릴게요." />
+        {res.status === 'ready' && (
+          <>
+            <PinnedReport report={res.data.lostReport} />
+            {candidates.length === 0 ? (
+              <StateView kind="empty" title="아직 비슷한 습득물이 없습니다" description="새로 등록되면 알려 드릴게요." />
+            ) : (
+              <>
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    type="button"
+                    aria-label="이전 후보"
+                    disabled={index === 0}
+                    onClick={() => setIndex((i) => i - 1)}
+                    className="flex size-9 items-center justify-center rounded-field border border-line bg-bg-1 disabled:opacity-40"
+                  >
+                    <ChevronLeft size={18} aria-hidden />
+                  </button>
+                  <p className="text-sm font-semibold text-tx-2" aria-live="polite">
+                    후보 <strong className="text-tx-1">{index + 1}</strong> / {candidates.length}
+                  </p>
+                  <button
+                    type="button"
+                    aria-label="다음 후보"
+                    disabled={index >= candidates.length - 1}
+                    onClick={() => setIndex((i) => i + 1)}
+                    className="flex size-9 items-center justify-center rounded-field border border-line bg-bg-1 disabled:opacity-40"
+                  >
+                    <ChevronRight size={18} aria-hidden />
+                  </button>
+                </div>
+
+                <article className="mt-3 overflow-hidden rounded-card border border-line bg-bg-1" aria-label={`후보 ${current.item.title}`}>
+                  <div className="flex items-center gap-3 p-3">
+                    <span className="size-16 shrink-0 overflow-hidden rounded-field bg-bg-3">
+                      {current.item.thumbnail ? (
+                        <img src={current.item.thumbnail.url} alt="" className="size-full object-cover" />
+                      ) : (
+                        <ImageOff className="m-5 text-tx-3" size={22} aria-hidden />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-base font-bold">{current.item.title}</span>
+                      <span className="block truncate text-xs text-tx-2">{current.item.keptAt}에 보관 중</span>
+                    </span>
+                    <span className="text-sm font-bold text-accent">{Math.round(current.score * 100)}%</span>
+                  </div>
+                </article>
+              </>
+            )}
+          </>
         )}
-        {res.status === 'ready' && res.data.candidates.length > 0 && (
-          <ul className="flex flex-col gap-2">
-            {res.data.candidates.map(({ item, score }) => (
-              <li key={item.id}>
-                <Link
-                  to={`/found/${item.id}`}
-                  state={{ item }}
-                  className="flex items-center gap-3 rounded-card border border-line bg-bg-1 p-3"
-                >
-                  <span className="size-14 shrink-0 overflow-hidden rounded-field bg-bg-3">
-                    {item.thumbnail ? (
-                      <img src={item.thumbnail.url} alt="" className="size-full object-cover" />
-                    ) : (
-                      <ImageOff className="m-4 text-tx-3" size={22} aria-hidden />
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-bold">{item.title}</span>
-                    <span className="block truncate text-xs text-tx-2">{item.keptAt}</span>
-                  </span>
-                  <span className="text-sm font-bold text-accent">{Math.round(score * 100)}%</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="mt-6 rounded-card bg-bg-3 px-4 py-3 text-center text-[13px] text-tx-2">상세 비교 화면은 준비 중입니다</p>
       </section>
     </>
   );
