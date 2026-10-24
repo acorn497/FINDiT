@@ -8,6 +8,7 @@ import { Button } from '../../shared/ui/Button';
 import { Spinner } from '../../shared/ui/Spinner';
 import { StateView } from '../../shared/ui/StateView';
 import { matchApi } from './api';
+import { ComparisonTable } from './ComparisonTable';
 import { PinnedReport } from './PinnedReport';
 
 /** ⑥ 매칭 후보 — 내 분실 신고를 위에 고정하고 후보를 하나씩 넘겨 본다 */
@@ -101,6 +102,9 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
                       <span className="block truncate text-xs text-tx-2">{current.item.keptAt}에 보관 중</span>
                     </span>
                     <span className="text-sm font-bold text-accent">{Math.round(current.score * 100)}%</span>
+                  </div>
+                  <div className="border-t border-line px-3 pb-2">
+                    <ComparisonTable report={res.data.lostReport} candidate={current} />
                   </div>
                 </article>
               </>
