@@ -1,7 +1,9 @@
 import type { MatchCandidate } from '@findit/shared';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
+import { ApiError } from '../../shared/api/client';
+import { foundApi } from '../found/api';
 import { useAsync } from '../../shared/hooks/useAsync';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
@@ -38,12 +40,49 @@ export function MatchesPage() {
 }
 
 function MatchBrowser({ lostReportId }: { lostReportId: string }) {
+  const navigate = useNavigate();
   const res = useAsync((signal) => matchApi.list(lostReportId, signal), [lostReportId]);
   const [index, setIndex] = useState(0);
-  const candidates: MatchCandidate[] = res.status === 'ready' ? res.data.candidates : [];
+  const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  const [pending, setPending] = useState<'exclude' | 'claim' | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const candidates: MatchCandidate[] = res.status === 'ready' ? res.data.candidates.filter((c) => !excluded.has(c.item.id)) : [];
 
-  useEffect(() => setIndex(0), [lostReportId]);
+  useEffect(() => {
+    setIndex(0);
+    setExcluded(new Set());
+  }, [lostReportId]);
   const current = candidates[Math.min(index, candidates.length - 1)];
+
+  /** [이 후보 아님] — 서버에 제외를 기록하고 목록에서 뺀다 (다시 뜨지 않는다) */
+  const exclude = async () => {
+    if (!current || pending) return;
+    setPending('exclude');
+    setActionError(null);
+    try {
+      await matchApi.exclude(lostReportId, current.item.id);
+      setExcluded((prev) => new Set(prev).add(current.item.id));
+      setIndex((i) => Math.max(0, Math.min(i, candidates.length - 2)));
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : '제외하지 못했습니다');
+    } finally {
+      setPending(null);
+    }
+  };
+
+  /** [내 물건인 것 같아요] — ⑤ 상세와 같은 수령 신청 */
+  const claim = async () => {
+    if (!current || pending) return;
+    setPending('claim');
+    setActionError(null);
+    try {
+      await foundApi.claim(current.item.id);
+      navigate(`/found/${current.item.id}`);
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : '수령 신청을 보내지 못했습니다');
+      setPending(null);
+    }
+  };
 
   return (
     <>
@@ -110,6 +149,27 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
                     <ComparisonTable report={res.data.lostReport} candidate={current} />
                   </div>
                 </article>
+
+                <Link to={`/found/${current.item.id}`} state={{ item: current.item }} className="mt-3 block text-center text-[13px] font-semibold text-accent">
+                  습득물 상세 보기
+                </Link>
+                {actionError && (
+                  <p role="alert" className="mt-3 text-center text-[12.5px] font-medium text-err">
+                    ! {actionError}
+                  </p>
+                )}
+                <div className="h-20" aria-hidden />
+
+                <div className="fixed inset-x-0 bottom-16 z-20 border-t border-line bg-bg-1 px-4 py-3 md:bottom-0 md:left-60">
+                  <div className="mx-auto grid max-w-[1100px] grid-cols-3 gap-2">
+                    <Button variant="secondary" loading={pending === 'exclude'} onClick={() => void exclude()}>
+                      이 후보 아님
+                    </Button>
+                    <Button className="col-span-2" loading={pending === 'claim'} onClick={() => void claim()}>
+                      내 물건인 것 같아요
+                    </Button>
+                  </div>
+                </div>
               </>
             )}
           </>
