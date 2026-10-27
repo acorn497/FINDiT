@@ -1,5 +1,5 @@
 import type { MatchCandidate } from '@findit/shared';
-import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ApiError } from '../../shared/api/client';
@@ -11,6 +11,7 @@ import { Spinner } from '../../shared/ui/Spinner';
 import { StateView } from '../../shared/ui/StateView';
 import { matchApi } from './api';
 import { ComparisonTable } from './ComparisonTable';
+import { PhotoStrip } from './PhotoStrip';
 import { PinnedReport } from './PinnedReport';
 import { SimilarityBar } from './SimilarityBar';
 
@@ -101,7 +102,16 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
           <>
             <PinnedReport report={res.data.lostReport} />
             {candidates.length === 0 ? (
-              <StateView kind="empty" title="아직 비슷한 습득물이 없습니다" description="새로 등록되면 알려 드릴게요." />
+              <StateView
+                kind="empty"
+                title="아직 비슷한 습득물이 없습니다"
+                description="새로 등록되면 알려 드릴게요."
+                action={
+                  <Link to="/found" className="inline-flex h-12 items-center rounded-field bg-accent px-5 font-bold text-bg-1">
+                    습득물 목록 보기
+                  </Link>
+                }
+              />
             ) : (
               <>
                 <div className="mt-4 flex items-center justify-between">
@@ -129,18 +139,9 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
                 </div>
 
                 <article className="mt-3 overflow-hidden rounded-card border border-line bg-bg-1" aria-label={`후보 ${current.item.title}`}>
-                  <div className="flex items-center gap-3 p-3">
-                    <span className="size-16 shrink-0 overflow-hidden rounded-field bg-bg-3">
-                      {current.item.thumbnail ? (
-                        <img src={current.item.thumbnail.url} alt="" className="size-full object-cover" />
-                      ) : (
-                        <ImageOff className="m-5 text-tx-3" size={22} aria-hidden />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-base font-bold">{current.item.title}</span>
-                      <span className="block truncate text-xs text-tx-2">{current.item.keptAt}에 보관 중</span>
-                    </span>
+                  <div className="p-3">
+                    <p className="truncate text-base font-bold">{current.item.title}</p>
+                    <p className="truncate text-xs text-tx-2">{current.item.keptAt}에 보관 중</p>
                   </div>
                   <div className="px-3 pb-3">
                     <SimilarityBar score={current.score} />
@@ -148,6 +149,7 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
                   <div className="border-t border-line px-3 pb-2">
                     <ComparisonTable report={res.data.lostReport} candidate={current} />
                   </div>
+                  <PhotoStrip photos={current.item.photos} title={current.item.title} />
                 </article>
 
                 <Link to={`/found/${current.item.id}`} state={{ item: current.item }} className="mt-3 block text-center text-[13px] font-semibold text-accent">
