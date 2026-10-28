@@ -36,7 +36,8 @@ export function LostReportNewPage() {
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmLeave, setConfirmLeave] = useState(false);
-  const [done, setDone] = useState(false);
+  /** 후보가 없을 때만 보여 주는 안내 (후보가 있으면 바로 매칭 후보 화면으로) */
+  const [noCandidates, setNoCandidates] = useState(false);
 
   const category = useField<Category | null>(null, [required('물건 종류를 선택해 주세요')], { showAll: showAll && step === 1 });
   const lostPlace = useField('', [required('잃어버린 장소를 입력해 주세요'), maxLength(60, '장소는 60자 이하로 입력해 주세요')], {
@@ -74,7 +75,7 @@ export function LostReportNewPage() {
     setPending(true);
     setSubmitError(null);
     try {
-      await lostApi.create({
+      const created = await lostApi.create({
         category: category.value!,
         lostPlace: lostPlace.value.trim(),
         lostDate: lostDate.value,
@@ -82,7 +83,8 @@ export function LostReportNewPage() {
         color: color.value.trim(),
         description: description.value.trim() || undefined,
       });
-      setDone(true);
+      if (created.status === 'MATCHED') navigate(`/matches?lostReportId=${created.id}`, { replace: true });
+      else setNoCandidates(true);
     } catch (e) {
       setSubmitError(e instanceof ApiError ? e.message : '신고를 등록하지 못했습니다');
     } finally {
@@ -96,14 +98,14 @@ export function LostReportNewPage() {
     else setStep((step - 1) as Step);
   };
 
-  if (done) {
+  if (noCandidates) {
     return (
       <DoneView
         title="분실 신고가 접수되었습니다"
-        description="비슷한 습득물이 등록되면 후보로 보여 드릴게요."
+        description="아직 비슷한 습득물이 없습니다. 새로 등록되면 알려 드릴게요."
         actions={
-          <Button block onClick={() => navigate('/', { replace: true })}>
-            홈으로
+          <Button block onClick={() => navigate('/me/reports', { replace: true })}>
+            내 신고 관리로
           </Button>
         }
       />

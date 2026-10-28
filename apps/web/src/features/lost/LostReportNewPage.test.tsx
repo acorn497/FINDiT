@@ -11,12 +11,13 @@ const tomorrowISO = () => {
   return todayISO(d);
 };
 
-function setup(created: [number, unknown] = [201, { id: 'lr1' }]) {
+function setup(created: [number, unknown] = [201, { id: 'lr1', status: 'MATCHED' }]) {
   return renderApp(
     <Routes>
       <Route path="/lost/new" element={<LostReportNewPage />} />
       <Route path="/register" element={<p>등록 선택 화면</p>} />
-      <Route path="/" element={<p>홈 화면</p>} />
+      <Route path="/matches" element={<p>매칭 후보 화면</p>} />
+      <Route path="/me/reports" element={<p>내 신고 관리 화면</p>} />
     </Routes>,
     { route: '/lost/new', api: { 'POST /lost-reports': created } },
   );
@@ -74,7 +75,7 @@ describe('LostReportNewPage', () => {
     await userEvent.type(screen.getByLabelText(/특징/), '모서리 긁힘');
     await userEvent.click(next());
 
-    expect(await screen.findByText('분실 신고가 접수되었습니다')).toBeInTheDocument();
+    expect(await screen.findByText('매칭 후보 화면')).toBeInTheDocument();
     expect(api.calls.find((c) => c.path === '/lost-reports')?.body).toEqual({
       category: 'WALLET_CARD',
       lostPlace: '본관 3층 복도',
@@ -83,8 +84,18 @@ describe('LostReportNewPage', () => {
       color: '갈색',
       description: '모서리 긁힘',
     });
-    await userEvent.click(screen.getByRole('button', { name: '홈으로' }));
-    expect(screen.getByText('홈 화면')).toBeInTheDocument();
+  });
+
+  it('후보가 0건이면 안내 후 내 신고 관리로', async () => {
+    setup([201, { id: 'lr2', status: 'OPEN' }]);
+    await fillStep1();
+    await fillStep2();
+    await userEvent.click(next());
+    await userEvent.type(screen.getByLabelText('색상'), '갈색');
+    await userEvent.click(next());
+    expect(await screen.findByText('아직 비슷한 습득물이 없습니다. 새로 등록되면 알려 드릴게요.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '내 신고 관리로' }));
+    expect(screen.getByText('내 신고 관리 화면')).toBeInTheDocument();
   });
 
   it('서버 오류는 문구로 보여 준다', async () => {
