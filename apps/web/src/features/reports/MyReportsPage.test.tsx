@@ -64,6 +64,16 @@ describe('MyReportsPage', () => {
     await waitFor(() => expect(String(api.fetchMock.mock.calls.at(-1)![0])).toMatch(/kind=found$/));
   });
 
+  it('분실 신고에 새 후보 개수 배지 — 누르면 ⑥ 매칭 후보로', async () => {
+    renderApp(<MyReportsPage />, {
+      api: { 'GET /me/reports': [200, { items: [LOST, { ...LOST, id: 'lr2', title: '흰색 전자기기', candidateCount: 0 }, FOUND], nextCursor: null }] },
+    });
+    const badge = await screen.findByRole('link', { name: '새 후보 2개 보기' });
+    expect(badge).toHaveTextContent('새 후보 2');
+    expect(badge).toHaveAttribute('href', '/matches?lostReportId=lr1');
+    expect(screen.getAllByRole('link', { name: /새 후보/ })).toHaveLength(1);
+  });
+
   it('빈 결과·오류', async () => {
     const { unmount } = renderApp(<MyReportsPage />, { api: { 'GET /me/reports': [200, { items: [], nextCursor: null }] } });
     expect(await screen.findByText('아직 올린 신고가 없습니다')).toBeInTheDocument();

@@ -134,6 +134,15 @@ function ReportCard({ item }: { item: MyReportItem }) {
           <p className="truncate text-xs text-tx-2">
             {item.place} · {formatDateKo(item.date)}
           </p>
+          {isLost && (item.candidateCount ?? 0) > 0 && (
+            <Link
+              to={`/matches?lostReportId=${item.id}`}
+              aria-label={`새 후보 ${item.candidateCount}개 보기`}
+              className="mt-2 inline-flex items-center gap-1 rounded-chip bg-st-check px-2.5 py-1 text-[11.5px] font-bold text-bg-1"
+            >
+              새 후보 {item.candidateCount}
+            </Link>
+          )}
         </div>
         {isLost ? (
           <LostStatusBadge status={item.status as LostReportStatus} />
