@@ -1,11 +1,15 @@
 import { FOUND_STATUS_LABEL, LOST_STATUS_LABEL, type FoundItemStatus, type LostReportStatus, type MyReportItem, type ReportKind } from '@findit/shared';
+import { useState } from 'react';
 import { Link } from 'react-router';
+import { ApiError } from '../../shared/api/client';
 import { formatDateKo } from '../../shared/lib/date';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
+import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { Spinner } from '../../shared/ui/Spinner';
 import { StateView } from '../../shared/ui/StateView';
 import { FoundStatusBadge, LostStatusBadge } from '../../shared/ui/StatusBadge';
+import { reportsApi } from './api';
 import { useMyReports } from './useMyReports';
 
 const KINDS: { value: ReportKind | null; label: string }[] = [
@@ -36,8 +40,44 @@ function Chip({ selected, label, onClick }: { selected: boolean; label: string; 
 }
 
 /** ⑦ 내 신고 관리 — 내가 올린 분실 신고와 습득 등록을 한 목록에 */
+type Confirm = { type: 'close' | 'delete'; item: MyReportItem } | null;
+
+const CONFIRM_TEXT = {
+  close: {
+    title: '찾음 처리할까요?',
+    message: '마감하면 더 이상 후보를 찾지 않으며 되돌릴 수 없습니다.',
+    confirmLabel: '찾음 처리',
+  },
+  delete: {
+    title: '이 분실 신고를 삭제할까요?',
+    message: '삭제한 신고는 되돌릴 수 없습니다.',
+    confirmLabel: '삭제',
+  },
+};
+
 export function MyReportsPage() {
   const list = useMyReports();
+  const [confirm, setConfirm] = useState<Confirm>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  /** 삭제와 마감은 되돌릴 수 없으므로 재확인한 뒤에 보낸다 */
+  const runConfirmed = async () => {
+    if (!confirm) return;
+    const { type, item } = confirm;
+    setConfirm(null);
+    setActionError(null);
+    try {
+      if (type === 'close') {
+        await reportsApi.close(item.id);
+        list.patchItem(item.id, { status: 'CLOSED', candidateCount: 0 });
+      } else {
+        await reportsApi.remove(item.id);
+        list.patchItem(item.id, null);
+      }
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : '처리하지 못했습니다');
+    }
+  };
 
   return (
     <>
@@ -70,6 +110,12 @@ export function MyReportsPage() {
           </div>
         )}
 
+        {actionError && (
+          <p role="alert" className="mt-3 text-[12.5px] font-medium text-err">
+            ! {actionError}
+          </p>
+        )}
+
         <div className="mt-4">
           {list.state === 'loading' && (
             <div role="status" className="flex justify-center py-16">
@@ -96,7 +142,11 @@ export function MyReportsPage() {
             <ul className="flex flex-col gap-2.5">
               {list.items.map((item) => (
                 <li key={`${item.kind}-${item.id}`}>
-                  <ReportCard item={item} />
+                  <ReportCard
+                    item={item}
+                    onClose={() => setConfirm({ type: 'close', item })}
+                    onDelete={() => setConfirm({ type: 'delete', item })}
+                  />
                 </li>
               ))}
             </ul>
@@ -108,11 +158,27 @@ export function MyReportsPage() {
           )}
         </div>
       </section>
+
+      <ConfirmDialog
+        open={confirm !== null}
+        title={confirm ? CONFIRM_TEXT[confirm.type].title : ''}
+        message={confirm ? `${confirm.item.title} — ${CONFIRM_TEXT[confirm.type].message}` : ''}
+        confirmLabel={confirm ? CONFIRM_TEXT[confirm.type].confirmLabel : ''}
+        danger={confirm?.type === 'delete'}
+        onConfirm={() => void runConfirmed()}
+        onCancel={() => setConfirm(null)}
+      />
     </>
   );
 }
 
-function ReportCard({ item }: { item: MyReportItem }) {
+interface ReportCardProps {
+  item: MyReportItem;
+  onClose: () => void;
+  onDelete: () => void;
+}
+
+function ReportCard({ item, onClose, onDelete }: ReportCardProps) {
   const isLost = item.kind === 'lost';
   return (
     <article className="rounded-card border border-line bg-bg-1 p-3.5" aria-label={`${isLost ? '분실 신고' : '습득 등록'} ${item.title}`}>
@@ -150,6 +216,18 @@ function ReportCard({ item }: { item: MyReportItem }) {
           <FoundStatusBadge status={item.status as FoundItemStatus} />
         )}
       </div>
+      {isLost && (
+        <div className="mt-3 flex gap-2 border-t border-line pt-3">
+          <Button variant="secondary" className="h-9 flex-1 text-[13px]" onClick={onDelete}>
+            삭제
+          </Button>
+          {item.status !== 'CLOSED' && (
+            <Button variant="secondary" className="h-9 flex-1 text-[13px]" onClick={onClose}>
+              찾음 처리
+            </Button>
+          )}
+        </div>
+      )}
     </article>
   );
 }
