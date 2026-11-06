@@ -134,3 +134,59 @@ describe('LostReportNewPage', () => {
     expect(screen.getByText('등록 선택 화면')).toBeInTheDocument();
   });
 });
+
+describe('LostReportNewPage — 수정 (/lost/:id/edit)', () => {
+  const REPORT = {
+    id: 'lr1',
+    category: 'WALLET_CARD',
+    lostPlace: '본관 3층 복도',
+    lostDate: '2026-10-17',
+    timeSlot: 'LUNCH',
+    color: '갈색',
+    description: '모서리 긁힘',
+    status: 'MATCHED',
+    reporterId: 'u1',
+    createdAt: '',
+  };
+
+  function setupEdit(get: [number, unknown] = [200, REPORT]) {
+    return renderApp(
+      <Routes>
+        <Route path="/lost/:id/edit" element={<LostReportNewPage />} />
+        <Route path="/me/reports" element={<p>내 신고 관리 화면</p>} />
+      </Routes>,
+      { route: '/lost/lr1/edit', api: { 'GET /lost-reports/lr1': get, 'PATCH /lost-reports/lr1': [200, REPORT] } },
+    );
+  }
+
+  it('기존 값을 채우고, 바꾼 내용을 PATCH 로 보낸 뒤 내 신고 관리로', async () => {
+    const { api } = setupEdit();
+    expect(await screen.findByRole('heading', { name: '분실 신고 수정' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '지갑·카드' })).toHaveAttribute('aria-checked', 'true');
+    await userEvent.click(next());
+    expect(screen.getByLabelText('잃어버린 장소')).toHaveValue('본관 3층 복도');
+    expect(screen.getByRole('radio', { name: '점심시간' })).toHaveAttribute('aria-checked', 'true');
+    await userEvent.clear(screen.getByLabelText('잃어버린 장소'));
+    await userEvent.type(screen.getByLabelText('잃어버린 장소'), '본관 2층 복도');
+    await userEvent.click(next());
+    expect(screen.getByLabelText('색상')).toHaveValue('갈색');
+    await userEvent.click(screen.getByRole('button', { name: '수정하기' }));
+    expect(await screen.findByText('내 신고 관리 화면')).toBeInTheDocument();
+    expect(api.calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({ lostPlace: '본관 2층 복도', timeSlot: 'LUNCH', color: '갈색' });
+  });
+
+  it('바꾼 뒤 × 를 누르면 수정 취소를 재확인한다', async () => {
+    setupEdit();
+    await screen.findByRole('heading', { name: '분실 신고 수정' });
+    await userEvent.click(screen.getByRole('radio', { name: '전자기기' }));
+    await userEvent.click(screen.getByRole('button', { name: '작성 취소' }));
+    expect(screen.getByRole('dialog', { name: '수정을 그만둘까요?' })).toBeInTheDocument();
+  });
+
+  it('불러오지 못하면 안내 후 내 신고 관리로', async () => {
+    setupEdit([403, { code: 'FORBIDDEN', message: '내 신고만' }]);
+    expect(await screen.findByText('신고를 불러오지 못했습니다')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '내 신고 관리로' }));
+    expect(screen.getByText('내 신고 관리 화면')).toBeInTheDocument();
+  });
+});

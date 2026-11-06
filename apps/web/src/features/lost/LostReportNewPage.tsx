@@ -1,7 +1,7 @@
 import type { Category, TimeSlot } from '@findit/shared';
 import { X } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
 import { ApiError } from '../../shared/api/client';
 import { ChipGroup } from '../../shared/form/ChipGroup';
 import { CATEGORY_OPTIONS, TIME_SLOT_OPTIONS } from '../../shared/form/options';
@@ -15,6 +15,8 @@ import { FormScreen } from '../../shared/layout/FormScreen';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { DoneView } from '../../shared/ui/DoneView';
+import { LoadingScreen } from '../../shared/ui/LoadingScreen';
+import { StateView } from '../../shared/ui/StateView';
 import { lostApi } from './api';
 
 type Step = 1 | 2 | 3;
@@ -28,9 +30,14 @@ const STEP_LABEL: Record<Step, string> = {
 /**
  * ② 분실 신고 작성 — (1) 물건 종류 (2) 장소·날짜·시간대 (3) 색상·특징
  * 단계를 오가도 값을 유지하고, 앱바 × 는 작성 내용 삭제를 재확인한다.
+ * /lost/:id/edit 로 들어오면 같은 화면으로 수정한다.
  */
 export function LostReportNewPage() {
   const navigate = useNavigate();
+  const { id: editId } = useParams();
+  const editing = Boolean(editId);
+  const [loadState, setLoadState] = useState<'idle' | 'loading' | 'error'>(editing ? 'loading' : 'idle');
+  const [initialDirty, setInitialDirty] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [showAll, setShowAll] = useState(false);
   const [pending, setPending] = useState(false);
@@ -56,9 +63,33 @@ export function LostReportNewPage() {
     3: [color, description],
   }[step];
 
-  const dirty = Boolean(category.value || lostPlace.value || lostDate.value || timeSlot || color.value || description.value);
+  // 수정이면 기존 값을 채운다
+  useEffect(() => {
+    if (!editId) return;
+    const controller = new AbortController();
+    lostApi
+      .get(editId, controller.signal)
+      .then((r) => {
+        category.reset(r.category);
+        lostPlace.reset(r.lostPlace);
+        lostDate.reset(r.lostDate);
+        setTimeSlot(r.timeSlot === 'UNKNOWN' ? null : r.timeSlot);
+        color.reset(r.color);
+        description.reset(r.description ?? '');
+        setLoadState('idle');
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLoadState('error');
+      });
+    return () => controller.abort();
+    // 처음 한 번만 채운다
+  }, [editId]);
 
-  const leave = () => navigate('/register', { replace: true });
+  const dirty =
+    initialDirty || (!editing && Boolean(category.value || lostPlace.value || lostDate.value || timeSlot || color.value || description.value));
+  const markDirty = () => editing && setInitialDirty(true);
+
+  const leave = () => navigate(editing ? '/me/reports' : '/register', { replace: true });
   const requestLeave = () => (dirty ? setConfirmLeave(true) : leave());
 
   const goNext = async () => {
@@ -74,19 +105,25 @@ export function LostReportNewPage() {
 
     setPending(true);
     setSubmitError(null);
+    const body = {
+      category: category.value!,
+      lostPlace: lostPlace.value.trim(),
+      lostDate: lostDate.value,
+      timeSlot: timeSlot ?? (editing ? 'UNKNOWN' : undefined),
+      color: color.value.trim(),
+      description: description.value.trim() || (editing ? '' : undefined),
+    } as const;
     try {
-      const created = await lostApi.create({
-        category: category.value!,
-        lostPlace: lostPlace.value.trim(),
-        lostDate: lostDate.value,
-        timeSlot: timeSlot ?? undefined,
-        color: color.value.trim(),
-        description: description.value.trim() || undefined,
-      });
+      if (editId) {
+        await lostApi.update(editId, body);
+        navigate('/me/reports', { replace: true });
+        return;
+      }
+      const created = await lostApi.create(body);
       if (created.status === 'MATCHED') navigate(`/matches?lostReportId=${created.id}`, { replace: true });
       else setNoCandidates(true);
     } catch (e) {
-      setSubmitError(e instanceof ApiError ? e.message : '신고를 등록하지 못했습니다');
+      setSubmitError(e instanceof ApiError ? e.message : editing ? '신고를 수정하지 못했습니다' : '신고를 등록하지 못했습니다');
     } finally {
       setPending(false);
     }
@@ -97,6 +134,18 @@ export function LostReportNewPage() {
     if (step === 1) requestLeave();
     else setStep((step - 1) as Step);
   };
+
+  if (loadState === 'loading') return <LoadingScreen message="신고 내용을 불러오고 있어요" />;
+  if (loadState === 'error') {
+    return (
+      <StateView
+        kind="error"
+        title="신고를 불러오지 못했습니다"
+        description="삭제되었거나 내 신고가 아닙니다."
+        action={<Button onClick={() => navigate('/me/reports', { replace: true })}>내 신고 관리로</Button>}
+      />
+    );
+  }
 
   if (noCandidates) {
     return (
@@ -117,7 +166,7 @@ export function LostReportNewPage() {
       <FormScreen
         appBar={
           <AppBar
-            title="분실 신고 작성"
+            title={editing ? '분실 신고 수정' : '분실 신고 작성'}
             onBack={goPrev}
             actions={
               <button
@@ -137,20 +186,23 @@ export function LostReportNewPage() {
               이전
             </Button>
             <Button className="col-span-2" loading={pending} onClick={() => void goNext()}>
-              {step === 3 ? '신고하기' : '다음'}
+              {step === 3 ? (editing ? '수정하기' : '신고하기') : '다음'}
             </Button>
           </div>
         }
       >
         <StepProgress step={step} total={3} label={STEP_LABEL[step]} />
 
-        <div className="mt-5 flex flex-col gap-5">
+        <div className="mt-5 flex flex-col gap-5" onInput={markDirty}>
           {step === 1 && (
             <ChipGroup
               label="물건 종류"
               options={CATEGORY_OPTIONS}
               value={category.value}
-              onChange={(v) => category.setValue(v)}
+              onChange={(v) => {
+                markDirty();
+                category.setValue(v);
+              }}
               error={category.visibleError}
             />
           )}
@@ -194,8 +246,8 @@ export function LostReportNewPage() {
 
       <ConfirmDialog
         open={confirmLeave}
-        title="작성을 그만둘까요?"
-        message="지금까지 작성한 내용이 삭제됩니다."
+        title={editing ? '수정을 그만둘까요?' : '작성을 그만둘까요?'}
+        message={editing ? '바꾼 내용이 저장되지 않습니다.' : '지금까지 작성한 내용이 삭제됩니다.'}
         confirmLabel="삭제"
         cancelLabel="계속 작성"
         danger

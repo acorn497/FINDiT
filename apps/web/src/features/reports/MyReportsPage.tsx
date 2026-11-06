@@ -218,6 +218,14 @@ function ReportCard({ item, onClose, onDelete }: ReportCardProps) {
       </div>
       {isLost && (
         <div className="mt-3 flex gap-2 border-t border-line pt-3">
+          {item.status !== 'CLOSED' && (
+            <Link
+              to={`/lost/${item.id}/edit`}
+              className="inline-flex h-9 flex-1 items-center justify-center rounded-field border border-line bg-bg-1 text-[13px] font-bold text-tx-2"
+            >
+              수정
+            </Link>
+          )}
           <Button variant="secondary" className="h-9 flex-1 text-[13px]" onClick={onDelete}>
             삭제
           </Button>

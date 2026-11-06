@@ -37,6 +37,7 @@ export function AppRoutes() {
         {/* 입력 흐름 보호 — 하단 탭을 숨긴다 */}
         <Route path="found/new" element={<FoundNewPage />} />
         <Route path="lost/new" element={<LostReportNewPage />} />
+        <Route path="lost/:id/edit" element={<LostReportNewPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />
