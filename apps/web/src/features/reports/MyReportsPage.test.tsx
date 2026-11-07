@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/render';
 import { MyReportsPage } from './MyReportsPage';
@@ -72,6 +72,71 @@ describe('MyReportsPage', () => {
     expect(badge).toHaveTextContent('새 후보 2');
     expect(badge).toHaveAttribute('href', '/matches?lostReportId=lr1');
     expect(screen.getAllByRole('link', { name: /새 후보/ })).toHaveLength(1);
+  });
+
+  it('찾음 처리(마감) — 재확인 모달에서 확인해야 보내고, 배지가 마감으로 바뀐다', async () => {
+    const { api } = renderApp(<MyReportsPage />, {
+      api: {
+        'GET /me/reports': [200, { items: [LOST], nextCursor: null }],
+        'POST /lost-reports/lr1/close': [200, { ...LOST, status: 'CLOSED' }],
+      },
+    });
+    const card = await screen.findByRole('article', { name: '분실 신고 갈색 지갑·카드' });
+    await userEvent.click(within(card).getByRole('button', { name: '찾음 처리' }));
+    const dialog = screen.getByRole('dialog', { name: '찾음 처리할까요?' });
+    expect(dialog).toHaveTextContent('되돌릴 수 없습니다');
+    await userEvent.click(within(dialog).getByRole('button', { name: '취소' }));
+    expect(api.calls.some((c) => c.path === '/lost-reports/lr1/close')).toBe(false);
+
+    await userEvent.click(within(card).getByRole('button', { name: '찾음 처리' }));
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '찾음 처리' }));
+    await waitFor(() => expect(within(card).getByText('마감')).toBeInTheDocument());
+    expect(within(card).queryByRole('button', { name: '찾음 처리' })).not.toBeInTheDocument();
+    expect(within(card).queryByRole('link', { name: '수정' })).not.toBeInTheDocument();
+    expect(within(card).queryByRole('link', { name: /새 후보/ })).not.toBeInTheDocument();
+  });
+
+  it('삭제 — 재확인 후 목록에서 사라진다', async () => {
+    renderApp(<MyReportsPage />, {
+      api: {
+        'GET /me/reports': [200, { items: [LOST, FOUND], nextCursor: null }],
+        'DELETE /lost-reports/lr1': [200, { deleted: true }],
+      },
+    });
+    const card = await screen.findByRole('article', { name: '분실 신고 갈색 지갑·카드' });
+    expect(within(card).getByRole('link', { name: '수정' })).toHaveAttribute('href', '/lost/lr1/edit');
+    await userEvent.click(within(card).getByRole('button', { name: '삭제' }));
+    await userEvent.click(within(screen.getByRole('dialog', { name: '이 분실 신고를 삭제할까요?' })).getByRole('button', { name: '삭제' }));
+    await waitFor(() => expect(screen.queryByRole('article', { name: /갈색 지갑·카드/ })).not.toBeInTheDocument());
+    expect(screen.getByRole('article', { name: '습득 등록 회색 후드집업' })).toBeInTheDocument();
+  });
+
+  it('습득 등록 항목에는 관리 버튼이 없다', async () => {
+    renderApp(<MyReportsPage />, { api: { 'GET /me/reports': [200, { items: [FOUND], nextCursor: null }] } });
+    const card = await screen.findByRole('article', { name: '습득 등록 회색 후드집업' });
+    expect(within(card).queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('처리 실패는 문구로', async () => {
+    renderApp(<MyReportsPage />, {
+      api: {
+        'GET /me/reports': [200, { items: [LOST], nextCursor: null }],
+        'DELETE /lost-reports/lr1': [403, { code: 'FORBIDDEN', message: '내 신고만 볼 수 있고 고칠 수 있습니다' }],
+      },
+    });
+    await userEvent.click(await screen.findByRole('button', { name: '삭제' }));
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '삭제' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('내 신고만 볼 수 있고 고칠 수 있습니다');
+    expect(screen.getByRole('article', { name: /갈색 지갑·카드/ })).toBeInTheDocument();
+  });
+
+  it('조건에 맞는 항목이 없으면 다른 안내', async () => {
+    renderApp(<MyReportsPage />, {
+      api: { 'GET /me/reports': (_b, url) => (url.searchParams.get('kind') ? [200, { items: [], nextCursor: null }] : [200, { items: [LOST], nextCursor: null }]) },
+    });
+    await screen.findByRole('article', { name: /갈색 지갑·카드/ });
+    await userEvent.click(screen.getByRole('radio', { name: '습득 등록' }));
+    expect(await screen.findByText('이 조건의 신고가 없습니다')).toBeInTheDocument();
   });
 
   it('빈 결과·오류', async () => {
