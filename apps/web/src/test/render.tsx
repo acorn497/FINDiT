@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { AuthProvider } from '../features/auth/AuthContext';
+import { ToastProvider } from '../shared/toast/ToastContext';
 import { STUDENT } from './fixtures';
 import { mockApi } from './mockApi';
 
@@ -32,7 +33,9 @@ export function renderApp(
   });
   const utils = render(
     <MemoryRouter initialEntries={[route]}>
-      <AuthProvider>{ui}</AuthProvider>
+      <ToastProvider>
+        <AuthProvider>{ui}</AuthProvider>
+      </ToastProvider>
     </MemoryRouter>,
   );
   return { ...utils, api: mocked };

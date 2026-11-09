@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
+import { ToastProvider } from '../../shared/toast/ToastContext';
 import { mockApi } from '../../test/mockApi';
 import { AuthProvider } from './AuthContext';
 import { LoginPage } from './LoginPage';
@@ -23,12 +24,14 @@ function setup(routes: Parameters<typeof mockApi>[0] = {}) {
   });
   render(
     <MemoryRouter initialEntries={[{ pathname: '/login', state: { from: '/found' } }]}>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/found" element={<p>습득물 목록 화면</p>} />
-        </Routes>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/found" element={<p>습득물 목록 화면</p>} />
+          </Routes>
+        </AuthProvider>
+      </ToastProvider>
     </MemoryRouter>,
   );
   return api;
@@ -86,6 +89,16 @@ describe('LoginPage', () => {
     expect(await screen.findByText('습득물 목록 화면')).toBeInTheDocument();
   });
 
+  it('네트워크 오류는 칸 아래가 아니라 공용 토스트로', async () => {
+    setup({ 'POST /auth/check-email': [502, { code: 'BAD_GATEWAY', message: '서버에 연결할 수 없습니다' }] });
+    await userEvent.type(emailInput(), 's2217@gbsw.hs.kr');
+    await userEvent.click(next());
+    const toast = await screen.findByRole('alert');
+    expect(toast).toHaveTextContent('서버에 연결할 수 없습니다');
+    expect(toast.closest('[data-kind]')).toHaveAttribute('data-kind', 'error');
+    expect(emailInput()).not.toHaveAttribute('aria-invalid');
+  });
+
   it('비밀번호가 틀리면 401 사유를 보여 준다', async () => {
     setup();
     await userEvent.type(emailInput(), 's2217@gbsw.hs.kr');
@@ -120,7 +133,7 @@ describe('LoginPage', () => {
       expect(emailInput()).toHaveAttribute('readonly');
       expect(emailInput()).toHaveValue('s2217@gbsw.hs.kr');
       await userEvent.click(screen.getByRole('button', { name: '재설정 안내 보내기' }));
-      expect(await screen.findByText(/재설정 안내를 보냈습니다/)).toBeInTheDocument();
+      expect(await screen.findByText(/학교 메일함을 확인해 주세요/)).toBeInTheDocument();
       expect(api.calls.at(-1)).toMatchObject({ path: '/auth/password-reset', body: { email: 's2217@gbsw.hs.kr' } });
     });
 
@@ -150,7 +163,14 @@ describe('LoginPage', () => {
       expect(await screen.findByRole('button', { name: '다시 보내기 (37초)' })).toBeDisabled();
     });
 
-    it('그 밖의 오류는 문구로 알린다', async () => {
+    it('보내면 성공 토스트', async () => {
+      setup();
+      await toResetStep();
+      await userEvent.click(screen.getByRole('button', { name: '재설정 안내 보내기' }));
+      expect(await screen.findByText('재설정 안내를 보냈습니다')).toBeInTheDocument();
+    });
+
+    it('그 밖의 오류는 공용 토스트로 알린다', async () => {
       setup({ 'POST /auth/password-reset': [500, { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다' }] });
       await toResetStep();
       await userEvent.click(screen.getByRole('button', { name: '재설정 안내 보내기' }));

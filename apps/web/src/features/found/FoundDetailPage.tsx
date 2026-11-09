@@ -6,6 +6,7 @@ import { formatDateKo, formatDateTime } from '../../shared/lib/date';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
 import { StateView } from '../../shared/ui/StateView';
+import { useToast } from '../../shared/toast/ToastContext';
 import { foundApi } from './api';
 import { PhotoCarousel } from './PhotoCarousel';
 
@@ -16,13 +17,13 @@ import { PhotoCarousel } from './PhotoCarousel';
 export function FoundDetailPage() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const preview = (useLocation().state as { item?: FoundItemSummary } | null)?.item;
   const initial = preview?.id === id ? preview : undefined;
 
   const [detail, setDetail] = useState<FoundItemDetail | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [pending, setPending] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -36,14 +37,14 @@ export function FoundDetailPage() {
     return () => controller.abort();
   }, [id]);
 
-  const run = async (action: () => Promise<FoundItemDetail>) => {
+  const run = async (action: () => Promise<FoundItemDetail>, done: string) => {
     if (pending) return;
     setPending(true);
-    setActionError(null);
     try {
       setDetail(await action());
+      toast.success(done);
     } catch (e) {
-      setActionError(e instanceof ApiError ? e.message : '요청을 처리하지 못했습니다');
+      toast.fromError(e);
     } finally {
       setPending(false);
     }
@@ -110,11 +111,6 @@ export function FoundDetailPage() {
               지난 신청이 거절되었습니다{detail.myClaim.rejectReason ? ` — ${detail.myClaim.rejectReason}` : ''}
             </p>
           )}
-          {actionError && (
-            <p role="alert" className="mt-3 text-[12.5px] font-medium text-err">
-              ! {actionError}
-            </p>
-          )}
         </div>
       </article>
 
@@ -133,7 +129,7 @@ export function FoundDetailPage() {
               <Button variant="secondary" onClick={() => navigate('/found')}>
                 목록으로
               </Button>
-              <Button className="col-span-2" variant="secondary" loading={pending} onClick={() => void run(() => foundApi.cancelClaim(id))}>
+              <Button className="col-span-2" variant="secondary" loading={pending} onClick={() => void run(() => foundApi.cancelClaim(id), '수령 신청을 취소했습니다')}>
                 신청 취소
               </Button>
             </div>
@@ -146,7 +142,7 @@ export function FoundDetailPage() {
                 className="col-span-2"
                 loading={pending}
                 disabled={!detail}
-                onClick={() => void run(() => foundApi.claim(id))}
+                onClick={() => void run(() => foundApi.claim(id), '수령 신청을 보냈습니다. 담당 선생님 확인을 기다려 주세요')}
               >
                 내 물건인 것 같아요
               </Button>

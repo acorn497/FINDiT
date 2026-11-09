@@ -2,7 +2,6 @@ import type { Category, TimeSlot } from '@findit/shared';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ApiError } from '../../shared/api/client';
 import { ChipGroup } from '../../shared/form/ChipGroup';
 import { CATEGORY_OPTIONS, TIME_SLOT_OPTIONS } from '../../shared/form/options';
 import { maxLength, notFuture, required } from '../../shared/form/rules';
@@ -14,9 +13,9 @@ import { AppBar } from '../../shared/layout/AppBar';
 import { FormScreen } from '../../shared/layout/FormScreen';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
-import { DoneView } from '../../shared/ui/DoneView';
 import { LoadingScreen } from '../../shared/ui/LoadingScreen';
 import { StateView } from '../../shared/ui/StateView';
+import { useToast } from '../../shared/toast/ToastContext';
 import { lostApi } from './api';
 
 type Step = 1 | 2 | 3;
@@ -34,6 +33,7 @@ const STEP_LABEL: Record<Step, string> = {
  */
 export function LostReportNewPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { id: editId } = useParams();
   const editing = Boolean(editId);
   const [loadState, setLoadState] = useState<'idle' | 'loading' | 'error'>(editing ? 'loading' : 'idle');
@@ -41,10 +41,7 @@ export function LostReportNewPage() {
   const [step, setStep] = useState<Step>(1);
   const [showAll, setShowAll] = useState(false);
   const [pending, setPending] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmLeave, setConfirmLeave] = useState(false);
-  /** 후보가 없을 때만 보여 주는 안내 (후보가 있으면 바로 매칭 후보 화면으로) */
-  const [noCandidates, setNoCandidates] = useState(false);
 
   const category = useField<Category | null>(null, [required('물건 종류를 선택해 주세요')], { showAll: showAll && step === 1 });
   const lostPlace = useField('', [required('잃어버린 장소를 입력해 주세요'), maxLength(60, '장소는 60자 이하로 입력해 주세요')], {
@@ -104,7 +101,6 @@ export function LostReportNewPage() {
     }
 
     setPending(true);
-    setSubmitError(null);
     const body = {
       category: category.value!,
       lostPlace: lostPlace.value.trim(),
@@ -116,14 +112,21 @@ export function LostReportNewPage() {
     try {
       if (editId) {
         await lostApi.update(editId, body);
+        toast.success('분실 신고를 수정했습니다');
         navigate('/me/reports', { replace: true });
         return;
       }
       const created = await lostApi.create(body);
-      if (created.status === 'MATCHED') navigate(`/matches?lostReportId=${created.id}`, { replace: true });
-      else setNoCandidates(true);
+      toast.success('분실 신고가 접수되었습니다');
+      if (created.status === 'MATCHED') {
+        navigate(`/matches?lostReportId=${created.id}`, { replace: true });
+      } else {
+        // 후보가 0건이면 안내 후 내 신고 관리로
+        toast.info('아직 비슷한 습득물이 없습니다. 새로 등록되면 알려 드릴게요');
+        navigate('/me/reports', { replace: true });
+      }
     } catch (e) {
-      setSubmitError(e instanceof ApiError ? e.message : editing ? '신고를 수정하지 못했습니다' : '신고를 등록하지 못했습니다');
+      toast.fromError(e, editing ? '신고를 수정하지 못했습니다' : '신고를 등록하지 못했습니다');
     } finally {
       setPending(false);
     }
@@ -143,20 +146,6 @@ export function LostReportNewPage() {
         title="신고를 불러오지 못했습니다"
         description="삭제되었거나 내 신고가 아닙니다."
         action={<Button onClick={() => navigate('/me/reports', { replace: true })}>내 신고 관리로</Button>}
-      />
-    );
-  }
-
-  if (noCandidates) {
-    return (
-      <DoneView
-        title="분실 신고가 접수되었습니다"
-        description="아직 비슷한 습득물이 없습니다. 새로 등록되면 알려 드릴게요."
-        actions={
-          <Button block onClick={() => navigate('/me/reports', { replace: true })}>
-            내 신고 관리로
-          </Button>
-        }
       />
     );
   }
@@ -236,11 +225,6 @@ export function LostReportNewPage() {
             </>
           )}
 
-          {submitError && (
-            <p role="alert" className="text-[12.5px] font-medium text-err">
-              ! {submitError}
-            </p>
-          )}
         </div>
       </FormScreen>
 

@@ -1,13 +1,13 @@
 import { FOUND_STATUS_LABEL, LOST_STATUS_LABEL, type FoundItemStatus, type LostReportStatus, type MyReportItem, type ReportKind } from '@findit/shared';
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ApiError } from '../../shared/api/client';
 import { formatDateKo } from '../../shared/lib/date';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { Spinner } from '../../shared/ui/Spinner';
 import { StateView } from '../../shared/ui/StateView';
+import { useToast } from '../../shared/toast/ToastContext';
 import { FoundStatusBadge, LostStatusBadge } from '../../shared/ui/StatusBadge';
 import { reportsApi } from './api';
 import { useMyReports } from './useMyReports';
@@ -58,24 +58,25 @@ const CONFIRM_TEXT = {
 export function MyReportsPage() {
   const list = useMyReports();
   const [confirm, setConfirm] = useState<Confirm>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const toast = useToast();
 
   /** 삭제와 마감은 되돌릴 수 없으므로 재확인한 뒤에 보낸다 */
   const runConfirmed = async () => {
     if (!confirm) return;
     const { type, item } = confirm;
     setConfirm(null);
-    setActionError(null);
     try {
       if (type === 'close') {
         await reportsApi.close(item.id);
         list.patchItem(item.id, { status: 'CLOSED', candidateCount: 0 });
+        toast.success('찾음 처리했습니다');
       } else {
         await reportsApi.remove(item.id);
         list.patchItem(item.id, null);
+        toast.success('분실 신고를 삭제했습니다');
       }
     } catch (e) {
-      setActionError(e instanceof ApiError ? e.message : '처리하지 못했습니다');
+      toast.fromError(e, '처리하지 못했습니다');
     }
   };
 
@@ -108,12 +109,6 @@ export function MyReportsPage() {
               <Chip key={c.value} selected={list.status === c.value} label={c.label} onClick={() => list.setStatus(c.value)} />
             ))}
           </div>
-        )}
-
-        {actionError && (
-          <p role="alert" className="mt-3 text-[12.5px] font-medium text-err">
-            ! {actionError}
-          </p>
         )}
 
         <div className="mt-4">

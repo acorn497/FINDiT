@@ -93,8 +93,8 @@ describe('LostReportNewPage', () => {
     await userEvent.click(next());
     await userEvent.type(screen.getByLabelText('색상'), '갈색');
     await userEvent.click(next());
-    expect(await screen.findByText('아직 비슷한 습득물이 없습니다. 새로 등록되면 알려 드릴게요.')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: '내 신고 관리로' }));
+    expect(await screen.findByText('아직 비슷한 습득물이 없습니다. 새로 등록되면 알려 드릴게요')).toBeInTheDocument();
+    expect(screen.getByText('분실 신고가 접수되었습니다')).toBeInTheDocument();
     expect(screen.getByText('내 신고 관리 화면')).toBeInTheDocument();
   });
 

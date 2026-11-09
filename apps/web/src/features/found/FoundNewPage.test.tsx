@@ -4,11 +4,11 @@ import { Route, Routes } from 'react-router';
 import { renderApp } from '../../test/render';
 import { FoundNewPage } from './FoundNewPage';
 
-function setup(created: [number, unknown] = [201, { id: 'f1' }]) {
+function setup(created: [number, unknown] = [201, { id: 'f-new' }]) {
   return renderApp(
     <Routes>
       <Route path="/found/new" element={<FoundNewPage />} />
-      <Route path="/" element={<p>홈 화면</p>} />
+      <Route path="/found/:id" element={<p>습득물 상세 화면</p>} />
     </Routes>,
     { route: '/found/new', api: { 'POST /found-items': created } },
   );
@@ -80,7 +80,8 @@ describe('FoundNewPage', () => {
     await userEvent.click(screen.getByRole('radio', { name: '전자기기' }));
     await userEvent.type(screen.getByLabelText('맡긴 장소'), '2학년 교무실');
     await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
-    expect(await screen.findByText('습득물이 등록되었습니다')).toBeInTheDocument();
+    expect(await screen.findByText('습득물이 등록되었습니다. 고맙습니다!')).toBeInTheDocument();
+    expect(screen.getByText('습득물 상세 화면')).toBeInTheDocument();
     expect((api.calls.find((c) => c.path === '/found-items')?.body as { photoIds: string[] }).photoIds).toEqual([
       '11111111-1111-4111-8111-111111111111',
     ]);
@@ -120,13 +121,13 @@ describe('FoundNewPage', () => {
     await userEvent.upload(screen.getByLabelText('사진 추가'), [image('a.jpg')]);
     await screen.findByText(/업로드 중\.\.\. 1장 중 1번째/);
     await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('사진을 올리는 중이에요');
+    expect(await screen.findByText(/사진을 올리는 중이에요/)).toBeInTheDocument();
 
     finish!();
     expect(await screen.findByText('1장을 올리지 못했습니다')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '사진 1 다시 올리기' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('올리지 못한 사진이 있어요');
+    expect(await screen.findByRole('alert')).toHaveTextContent('올리지 못한 사진이 있어요');
     expect(api.calls.some((c) => c.path === '/found-items')).toBe(false);
     vi.restoreAllMocks();
   });
@@ -150,7 +151,7 @@ describe('FoundNewPage', () => {
     await userEvent.type(screen.getByLabelText('색상'), '갈색');
     await userEvent.click(screen.getByRole('button', { name: '등록하기' }));
 
-    expect(await screen.findByText('습득물이 등록되었습니다')).toBeInTheDocument();
+    expect(await screen.findByText('습득물 상세 화면')).toBeInTheDocument();
     expect(api.calls.find((c) => c.path === '/found-items')?.body).toEqual({
       category: 'WALLET_CARD',
       keptAt: '본관 1층 행정실',

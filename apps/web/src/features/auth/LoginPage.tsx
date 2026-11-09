@@ -7,6 +7,7 @@ import { StepProgress } from '../../shared/form/StepProgress';
 import { TextField } from '../../shared/form/TextField';
 import { useField } from '../../shared/form/useField';
 import { useCountdown } from '../../shared/hooks/useCountdown';
+import { useToast } from '../../shared/toast/ToastContext';
 import { Logo } from '../../shared/layout/Logo';
 import { Button } from '../../shared/ui/Button';
 import { authApi } from './api';
@@ -28,13 +29,13 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = useAuth();
+  const toast = useToast();
   const from = (location.state as { from?: string } | null)?.from ?? '/';
 
   const [step, setStep] = useState<Step>(1);
   const [showAll, setShowAll] = useState(false);
   const [pending, setPending] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-  const [resetError, setResetError] = useState<string | null>(null);
   const cooldown = useCountdown();
 
   const email = useField('', [required('학교 계정을 입력해 주세요'), emailRule('이메일 형식이 아닙니다')], {
@@ -58,7 +59,9 @@ export function LoginPage() {
       await authApi.checkEmail(email.value.trim());
       goTo(2);
     } catch (e) {
-      email.setServerError(e instanceof ApiError ? e.message : '계정을 확인하지 못했습니다');
+      // 등록되지 않은 계정은 칸 아래에, 그 밖의 실패(네트워크 등)는 공용 토스트로
+      if (e instanceof ApiError && e.status === 404) email.setServerError(e.message);
+      else toast.fromError(e, '계정을 확인하지 못했습니다');
     } finally {
       setPending(false);
     }
@@ -73,7 +76,8 @@ export function LoginPage() {
       await auth.login(email.value.trim(), password.value);
       navigate(from, { replace: true });
     } catch (e) {
-      password.setServerError(e instanceof ApiError ? e.message : '로그인하지 못했습니다');
+      if (e instanceof ApiError && e.status === 401) password.setServerError(e.message);
+      else toast.fromError(e, '로그인하지 못했습니다');
     } finally {
       setPending(false);
     }
@@ -82,10 +86,10 @@ export function LoginPage() {
   const sendReset = async () => {
     if (pending || cooldown.running) return;
     setPending(true);
-    setResetError(null);
     try {
       const res = await authApi.passwordReset(email.value.trim());
       setResetSent(true);
+      toast.success('재설정 안내를 보냈습니다');
       cooldown.start(res.retryAfter ?? PASSWORD_RESET_COOLDOWN_SEC);
     } catch (e) {
       if (e instanceof ApiError && e.status === 429 && e.retryAfter) {
@@ -93,7 +97,7 @@ export function LoginPage() {
         setResetSent(true);
         cooldown.start(e.retryAfter);
       } else {
-        setResetError(e instanceof ApiError ? e.message : '재설정 안내를 보내지 못했습니다');
+        toast.fromError(e, '재설정 안내를 보내지 못했습니다');
       }
     } finally {
       setPending(false);
@@ -159,11 +163,6 @@ export function LoginPage() {
                   ? `${email.value} 으로 재설정 안내를 보냈습니다. 학교 메일함을 확인해 주세요.`
                   : '학교 메일로 비밀번호 재설정 안내를 보내 드립니다.'}
               </div>
-            )}
-            {step === 3 && resetError && (
-              <p role="alert" className="text-[12.5px] font-medium text-err">
-                ! {resetError}
-              </p>
             )}
           </div>
 

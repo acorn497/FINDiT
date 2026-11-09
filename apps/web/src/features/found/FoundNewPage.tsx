@@ -2,7 +2,6 @@ import type { Category } from '@findit/shared';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ApiError } from '../../shared/api/client';
 import { ChipGroup } from '../../shared/form/ChipGroup';
 import { CATEGORY_OPTIONS } from '../../shared/form/options';
 import { maxLength, notFuture, required } from '../../shared/form/rules';
@@ -13,7 +12,7 @@ import { todayISO } from '../../shared/lib/date';
 import { AppBar } from '../../shared/layout/AppBar';
 import { FormScreen } from '../../shared/layout/FormScreen';
 import { Button } from '../../shared/ui/Button';
-import { DoneView } from '../../shared/ui/DoneView';
+import { useToast } from '../../shared/toast/ToastContext';
 import { foundApi } from './api';
 import { PhotoPicker } from './PhotoPicker';
 import { UploadProgress } from './UploadProgress';
@@ -25,12 +24,11 @@ import { usePhotoUploads } from './usePhotoUploads';
  */
 export function FoundNewPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const uploads = usePhotoUploads();
   const [showAll, setShowAll] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [pending, setPending] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
 
   const category = useField<Category | null>(null, [required('물건 종류를 선택해 주세요')], { showAll });
   const keptAt = useField('', [required('맡긴 장소를 입력해 주세요'), maxLength(60, '장소는 60자 이하로 입력해 주세요')], { showAll });
@@ -49,17 +47,16 @@ export function FoundNewPage() {
       return;
     }
     if (uploads.uploading) {
-      setSubmitError('사진을 올리는 중이에요. 업로드가 끝난 뒤 등록해 주세요');
+      toast.info('사진을 올리는 중이에요. 업로드가 끝난 뒤 등록해 주세요');
       return;
     }
     if (uploads.failed > 0) {
-      setSubmitError('올리지 못한 사진이 있어요. 다시 시도하거나 삭제해 주세요');
+      toast.error('올리지 못한 사진이 있어요. 다시 시도하거나 삭제해 주세요');
       return;
     }
     setPending(true);
-    setSubmitError(null);
     try {
-      await foundApi.create({
+      const created = await foundApi.create({
         category: category.value!,
         keptAt: keptAt.value.trim(),
         foundDate: foundDate.value,
@@ -69,27 +66,14 @@ export function FoundNewPage() {
         description: description.value.trim() || undefined,
         photoIds: uploads.photoIds,
       });
-      setDone(true);
+      toast.success('습득물이 등록되었습니다. 고맙습니다!');
+      navigate(`/found/${created.id}`, { replace: true });
     } catch (e) {
-      setSubmitError(e instanceof ApiError ? e.message : '습득물을 등록하지 못했습니다');
+      toast.fromError(e, '습득물을 등록하지 못했습니다');
     } finally {
       setPending(false);
     }
   };
-
-  if (done) {
-    return (
-      <DoneView
-        title="습득물이 등록되었습니다"
-        description="주인이 확인하면 담당 선생님을 통해 전달됩니다. 고맙습니다!"
-        actions={
-          <Button block onClick={() => navigate('/', { replace: true })}>
-            홈으로
-          </Button>
-        }
-      />
-    );
-  }
 
   return (
     <FormScreen
@@ -145,11 +129,6 @@ export function FoundNewPage() {
           지갑·학생증처럼 개인정보가 보이는 물건은 해당 부분을 가린 뒤 촬영해 주세요.
         </p>
 
-        {submitError && (
-          <p role="alert" className="text-[12.5px] font-medium text-err">
-            ! {submitError}
-          </p>
-        )}
       </div>
     </FormScreen>
   );
