@@ -342,3 +342,24 @@ export interface NotificationNewEvent {
   notification: AppNotification;
   unreadCount: number;
 }
+
+// ── 홈 요약 ─────────────────────────────────────────────
+export interface HomeMatch {
+  lostReportId: string;
+  lostReportTitle: string;
+  candidate: MatchCandidate;
+}
+
+/** GET /home/summary — 로그인 직후 첫 화면 */
+export interface HomeSummary {
+  /** 내 신고 진행 상태 (최근 3건) */
+  myReports: MyReportItem[];
+  /** 새로 도착한 매칭 후보 (열린 신고마다 1위, 최대 3건) */
+  newMatches: HomeMatch[];
+  /** 최근 등록된 습득물 */
+  recentFound: FoundItemSummary[];
+  /** 교사만 — 승인 대기 수 */
+  pendingClaims: number | null;
+  /** 신고·등록이 하나도 없는 새 사용자 */
+  isNewUser: boolean;
+}

@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
 import { seedFlow } from './flow.seed';
 import { seedFoundItems } from './found-items.seed';
+import { seedNotifications } from './notifications.seed';
 import { seedUsers } from './users.seed';
 
 /**
@@ -13,5 +14,6 @@ export async function runSeed(ds: DataSource) {
   const users = await seedUsers(ds);
   const found = await seedFoundItems(ds);
   const flow = await seedFlow(ds);
-  logger.log(`users +${users} · found_items +${found} · lost_reports/claims +${flow}`);
+  const notes = await seedNotifications(ds);
+  logger.log(`users +${users} · found_items +${found} · lost_reports/claims +${flow} · notifications +${notes}`);
 }
