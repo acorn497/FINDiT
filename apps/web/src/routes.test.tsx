@@ -47,7 +47,7 @@ describe('AppRoutes', () => {
   });
 
   it('하단 탭은 홈·습득물·등록·내 신고·알림 5개다', async () => {
-    renderApp(<AppRoutes />, { route: '/' });
+    renderApp(<AppRoutes />, { route: '/', api: { 'GET /home/summary': [500, {}] } });
     await screen.findByRole('heading', { name: '홈' });
     const [tabBar] = navs().filter((n) => n.className.includes('bottom-0'));
     const labels = Array.from(tabBar.querySelectorAll('a')).map((a) => a.textContent);

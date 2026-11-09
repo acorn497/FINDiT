@@ -4,6 +4,7 @@ import { GuestOnly, RequireAuth } from './features/auth/RequireAuth';
 import { FoundDetailPage } from './features/found/FoundDetailPage';
 import { FoundListPage } from './features/found/FoundListPage';
 import { FoundNewPage } from './features/found/FoundNewPage';
+import { HomePage } from './features/home/HomePage';
 import { LostReportNewPage } from './features/lost/LostReportNewPage';
 import { MatchesPage } from './features/match/MatchesPage';
 import { NotificationsPage } from './features/notification/NotificationsPage';
@@ -25,7 +26,7 @@ export function AppRoutes() {
       <Route element={<RequireAuth />}>
         {/* 탭이 보이는 화면 */}
         <Route element={<AppLayout />}>
-          <Route index element={<PlaceholderPage title="홈" />} />
+          <Route index element={<HomePage />} />
           <Route path="found" element={<FoundListPage />} />
           <Route path="found/:id" element={<FoundDetailPage />} />
           <Route path="register" element={<RegisterPage />} />
