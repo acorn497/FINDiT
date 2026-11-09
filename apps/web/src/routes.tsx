@@ -6,6 +6,7 @@ import { FoundListPage } from './features/found/FoundListPage';
 import { FoundNewPage } from './features/found/FoundNewPage';
 import { LostReportNewPage } from './features/lost/LostReportNewPage';
 import { MatchesPage } from './features/match/MatchesPage';
+import { NotificationsPage } from './features/notification/NotificationsPage';
 import { MyReportsPage } from './features/reports/MyReportsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
@@ -30,7 +31,7 @@ export function AppRoutes() {
           <Route path="register" element={<RegisterPage />} />
           <Route path="matches" element={<MatchesPage />} />
           <Route path="me/reports" element={<MyReportsPage />} />
-          <Route path="notifications" element={<PlaceholderPage title="알림" />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="admin" element={<PlaceholderPage title="관리자" />} />
         </Route>
 
