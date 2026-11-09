@@ -8,6 +8,7 @@ import { Button } from '../../shared/ui/Button';
 import { Spinner } from '../../shared/ui/Spinner';
 import { StateView } from '../../shared/ui/StateView';
 import { notificationApi } from './api';
+import { useNotifications } from './NotificationsContext';
 
 export const TYPE_ICON: Record<NotificationType, LucideIcon> = {
   NEW_MATCH: PackageSearch,
@@ -24,6 +25,8 @@ export const TYPE_ICON: Record<NotificationType, LucideIcon> = {
  */
 export function NotificationsPage() {
   const navigate = useNavigate();
+  const notifications = useNotifications();
+  const { setUnreadCount, subscribe } = notifications;
   const [items, setItems] = useState<AppNotification[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -39,13 +42,33 @@ export function NotificationsPage() {
         setItems(res.items);
         setCursor(res.nextCursor);
         setState('ready');
-        if (res.unreadCount > 0) await notificationApi.read().catch(() => undefined);
+        if (res.unreadCount > 0) {
+          const read = await notificationApi.read().catch(() => null);
+          if (read) setUnreadCount(read.unreadCount);
+        }
       })
       .catch(() => {
         if (!controller.signal.aborted) setState('error');
       });
     return () => controller.abort();
-  }, [reloadKey]);
+  }, [reloadKey, setUnreadCount]);
+
+  // 이 화면을 보고 있는 동안 도착한 알림은 맨 위에 붙이고 바로 읽음 처리한다.
+  // 연결이 끊겼다 다시 붙으면 목록을 다시 받는다.
+  useEffect(
+    () =>
+      subscribe(
+        (n) => {
+          setItems((prev) => (prev.some((p) => p.id === n.id) ? prev : [n, ...prev]));
+          void notificationApi
+            .read([n.id])
+            .then((r) => setUnreadCount(r.unreadCount))
+            .catch(() => undefined);
+        },
+        () => setReloadKey((k) => k + 1),
+      ),
+    [subscribe, setUnreadCount],
+  );
 
   const loadMore = async () => {
     if (!cursor || loadingMore) return;

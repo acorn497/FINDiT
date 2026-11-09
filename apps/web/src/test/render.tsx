@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { AuthProvider } from '../features/auth/AuthContext';
+import { NotificationsProvider } from '../features/notification/NotificationsContext';
 import { ToastProvider } from '../shared/toast/ToastContext';
 import { STUDENT } from './fixtures';
 import { mockApi } from './mockApi';
@@ -29,12 +30,15 @@ export function renderApp(
 ) {
   const mocked = mockApi({
     'GET /auth/me': user ? [200, user] : [401, { code: 'UNAUTHENTICATED', message: '로그인이 필요합니다' }],
+    'GET /notifications': [200, { items: [], nextCursor: null, unreadCount: 0 }],
     ...api,
   });
   const utils = render(
     <MemoryRouter initialEntries={[route]}>
       <ToastProvider>
-        <AuthProvider>{ui}</AuthProvider>
+        <AuthProvider>
+          <NotificationsProvider>{ui}</NotificationsProvider>
+        </AuthProvider>
       </ToastProvider>
     </MemoryRouter>,
   );

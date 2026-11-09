@@ -1,6 +1,7 @@
 import { LogOut } from 'lucide-react';
 import { NavLink } from 'react-router';
 import { useAuth } from '../../features/auth/AuthContext';
+import { UnreadBadge } from '../../features/notification/UnreadBadge';
 import { Logo } from './Logo';
 import { NAV_ITEMS } from './navItems';
 
@@ -25,7 +26,8 @@ export function SideNav() {
                 }
               >
                 <Icon size={20} aria-hidden />
-                {label}
+                <span className="flex-1">{label}</span>
+                {to === '/notifications' && <UnreadBadge />}
               </NavLink>
             </li>
           ))}

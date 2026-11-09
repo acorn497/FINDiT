@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router';
+import { UnreadBadge } from '../../features/notification/UnreadBadge';
 import { NAV_ITEMS } from './navItems';
 
 /** 좁은 화면의 하단 탭 (≥768px 에서는 숨기고 SideNav 를 쓴다) */
@@ -20,7 +21,10 @@ export function TabBar() {
                 }`
               }
             >
-              <Icon size={22} aria-hidden />
+              <span className="relative">
+                <Icon size={22} aria-hidden />
+                {to === '/notifications' && <UnreadBadge className="absolute -right-2.5 -top-1.5" />}
+              </span>
               {label}
             </NavLink>
           </li>
