@@ -8,6 +8,7 @@ import { HealthModule } from './health/health.module';
 import { LostReportsModule } from './lost-reports/lost-reports.module';
 import { MatchesModule } from './matches/matches.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { RealtimeModule } from './realtime/realtime.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { MeModule } from './users/me.module';
 import { UsersModule } from './users/users.module';
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     UploadsModule,
     MatchesModule,
     NotificationsModule,
+    RealtimeModule,
     MeModule,
   ],
 })
