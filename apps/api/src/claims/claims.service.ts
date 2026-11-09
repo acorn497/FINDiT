@@ -46,6 +46,7 @@ export class ClaimsService {
       return { claim, item };
     });
     await this.events.emit('found-item.status-changed', { id: item.id, category: item.category });
+    await this.events.emit('claim.created', { claimId: claim.id, foundItemId: item.id, claimantId: userId });
     return claim;
   }
 

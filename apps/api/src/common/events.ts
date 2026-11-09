@@ -9,6 +9,8 @@ export interface AppEventMap {
   'found-item.status-changed': { id: string; category: Category };
   /** 분실 신고가 만들어지거나 고쳐짐 */
   'lost-report.saved': { id: string };
+  /** 수령 신청이 들어옴 */
+  'claim.created': { claimId: string; foundItemId: string; claimantId: string };
 }
 
 type Handler<K extends keyof AppEventMap> = (payload: AppEventMap[K]) => Promise<void> | void;
