@@ -296,3 +296,49 @@ export type MyReportsResponse = CursorPage<MyReportItem>;
 export function lostReportTitle(r: { color: string; category: Category }): string {
   return [r.color, CATEGORY_LABEL[r.category]].filter(Boolean).join(' ');
 }
+
+// ── 알림 ────────────────────────────────────────────────
+export const NotificationType = {
+  NEW_MATCH: 'NEW_MATCH',
+  CLAIM_RECEIVED: 'CLAIM_RECEIVED',
+  CLAIM_APPROVED: 'CLAIM_APPROVED',
+  CLAIM_REJECTED: 'CLAIM_REJECTED',
+  PICKUP_GUIDE: 'PICKUP_GUIDE',
+  EXPIRING: 'EXPIRING',
+} as const;
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
+
+export const NOTIFICATION_TYPE_LABEL: Record<NotificationType, string> = {
+  NEW_MATCH: '새 후보 도착',
+  CLAIM_RECEIVED: '수령 신청 접수',
+  CLAIM_APPROVED: '신청 승인',
+  CLAIM_REJECTED: '신청 거절',
+  PICKUP_GUIDE: '수령 안내',
+  EXPIRING: '보관 기간 임박',
+};
+
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  /** 누르면 이동할 화면 */
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
+  payload: Record<string, unknown> | null;
+}
+
+export interface NotificationListResponse extends CursorPage<AppNotification> {
+  unreadCount: number;
+}
+
+/** Socket.IO 이벤트 이름 */
+export const SOCKET_EVENT = {
+  NOTIFICATION_NEW: 'notification:new',
+} as const;
+
+export interface NotificationNewEvent {
+  notification: AppNotification;
+  unreadCount: number;
+}

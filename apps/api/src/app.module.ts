@@ -7,6 +7,7 @@ import { FoundItemsModule } from './found-items/found-items.module';
 import { HealthModule } from './health/health.module';
 import { LostReportsModule } from './lost-reports/lost-reports.module';
 import { MatchesModule } from './matches/matches.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { MeModule } from './users/me.module';
 import { UsersModule } from './users/users.module';
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     FoundItemsModule,
     UploadsModule,
     MatchesModule,
+    NotificationsModule,
     MeModule,
   ],
 })
