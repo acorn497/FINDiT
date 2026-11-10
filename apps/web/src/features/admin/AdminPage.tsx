@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AppBar } from '../../shared/layout/AppBar';
+import { KeepingTab } from './KeepingTab';
 import { PendingClaimsTab } from './PendingClaimsTab';
 
 const TABS = [
@@ -35,7 +36,7 @@ export function AdminPage() {
         </div>
         <div role="tabpanel" id={`admin-panel-${tab}`} aria-labelledby={`admin-tab-${tab}`} className="mt-4">
           {tab === 'pending' && <PendingClaimsTab />}
-          {tab === 'keeping' && <p className="py-10 text-center text-sm text-tx-3">보관 중 물품 관리는 준비 중입니다.</p>}
+          {tab === 'keeping' && <KeepingTab />}
           {tab === 'stats' && <p className="py-10 text-center text-sm text-tx-3">요약은 준비 중입니다.</p>}
         </div>
       </div>
