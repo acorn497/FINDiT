@@ -15,6 +15,8 @@ export async function loginAs(app: INestApplication, email: string, password = S
 export async function resetAndSeed(app: INestApplication) {
   const ds = app.get(DataSource);
   await ds.query(`TRUNCATE notifications, match_exclusions, claims, photos, found_items, lost_reports, sessions RESTART IDENTITY CASCADE`);
+  // 테스트가 만든 계정은 지우고 시드 계정만 남긴다
+  await ds.query(`DELETE FROM users WHERE id::text NOT LIKE '00000000-0000-4000-8000-%'`);
   await runSeed(ds);
   return ds;
 }
