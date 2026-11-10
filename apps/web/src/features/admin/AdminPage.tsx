@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AppBar } from '../../shared/layout/AppBar';
 import { KeepingTab } from './KeepingTab';
 import { PendingClaimsTab } from './PendingClaimsTab';
+import { StatsTab } from './StatsTab';
 
 const TABS = [
   { id: 'pending', label: '승인 대기' },
@@ -37,7 +38,7 @@ export function AdminPage() {
         <div role="tabpanel" id={`admin-panel-${tab}`} aria-labelledby={`admin-tab-${tab}`} className="mt-4">
           {tab === 'pending' && <PendingClaimsTab />}
           {tab === 'keeping' && <KeepingTab />}
-          {tab === 'stats' && <p className="py-10 text-center text-sm text-tx-3">요약은 준비 중입니다.</p>}
+          {tab === 'stats' && <StatsTab />}
         </div>
       </div>
     </>
