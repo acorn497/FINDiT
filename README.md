@@ -59,6 +59,7 @@ apps/web/e2e      Playwright (모바일 390×844 / 데스크톱 1280×800)
 scripts/          commit-at.sh · verify-history.sh · test-all.sh
 ```
 
-- web 컨테이너의 nginx 가 정적 파일을 서빙하고 `/api` 를 api 로 넘긴다.
+- web 컨테이너의 nginx 가 정적 파일을 서빙하고 `/api` 와 `/socket.io`(WebSocket 업그레이드 포함)를 api 로 넘긴다.
+- 알림은 Socket.IO 로 실시간 전달된다. 소켓이 연결되지 않는 환경에서도 화면은 조회만으로 동작한다.
 - 색상은 `apps/web/src/styles/tokens.css` 한곳에서만 정의하고 화면에서는 `bg-st-keep` 같은 이름으로만 쓴다.
 - 명세가 모호해 스스로 정한 것은 [DECISIONS.md](DECISIONS.md) 에 있다.
