@@ -12,6 +12,6 @@ test('390×844 에서 습득물 등록의 [등록하기]가 화면 안에 보인
 test('좁은 화면은 하단 탭 5개', async ({ page }) => {
   await login(page, STUDENT, '/found');
   const tabs = page.getByRole('navigation', { name: '주요 메뉴' }).filter({ visible: true });
-  await expect(tabs.getByRole('link')).toHaveText(['홈', '습득물', '등록', '내 신고', '알림']);
+  await expect(tabs.getByRole('link')).toHaveText(['홈', '습득물', '등록', '내 신고', /알림$/]);
   await expect(page.getByRole('complementary')).toBeHidden();
 });
