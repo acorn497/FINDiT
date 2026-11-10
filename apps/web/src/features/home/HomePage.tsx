@@ -1,5 +1,5 @@
 import type { FoundItemStatus, LostReportStatus } from '@findit/shared';
-import { ChevronRight, ClipboardCheck, HandHeart, ImageOff, LogOut, PackageSearch } from 'lucide-react';
+import { ChevronRight, ClipboardCheck, HandHeart, ImageOff, LogOut, PackageSearch, ShieldCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useAsync } from '../../shared/hooks/useAsync';
@@ -38,6 +38,16 @@ export function HomePage() {
       <AppBar
         title="홈"
         actions={
+          <>
+          {user?.role === 'TEACHER' && (
+            <Link
+              to="/admin"
+              aria-label="관리자 화면"
+              className="flex size-9 items-center justify-center rounded-field bg-accent-weak text-accent md:hidden"
+            >
+              <ShieldCheck size={18} aria-hidden />
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => void logout()}
@@ -46,6 +56,7 @@ export function HomePage() {
           >
             <LogOut size={18} aria-hidden />
           </button>
+          </>
         }
       />
       <div className="px-4 pb-8 pt-4">

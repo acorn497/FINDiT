@@ -12,6 +12,7 @@ export function summary(over: Partial<FoundItemSummary> = {}): FoundItemSummary 
     foundDate: '2026-10-17',
     status: 'KEEPING',
     createdAt: '2026-10-17T07:24:00.000Z',
+    expiresAt: '2026-11-16T07:24:00.000Z',
     thumbnail: null,
     ...over,
   };

@@ -3,7 +3,7 @@ import { NavLink } from 'react-router';
 import { useAuth } from '../../features/auth/AuthContext';
 import { UnreadBadge } from '../../features/notification/UnreadBadge';
 import { Logo } from './Logo';
-import { NAV_ITEMS } from './navItems';
+import { NAV_ITEMS, TEACHER_NAV_ITEMS } from './navItems';
 
 /** 넓은 화면(≥768px)의 왼쪽 사이드 메뉴 */
 export function SideNav() {
@@ -14,7 +14,7 @@ export function SideNav() {
       <p className="mt-1 px-3 text-xs text-tx-3">교내 분실물 등록·매칭 서비스</p>
       <nav aria-label="주요 메뉴" className="mt-8">
         <ul className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          {[...NAV_ITEMS, ...(user?.role === 'TEACHER' ? TEACHER_NAV_ITEMS : [])].map(({ to, label, icon: Icon, end }) => (
             <li key={to}>
               <NavLink
                 to={to}

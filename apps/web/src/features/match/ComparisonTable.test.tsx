@@ -25,6 +25,7 @@ const candidate: MatchCandidate = {
     foundDate: '2026-09-11',
     status: 'KEEPING',
     createdAt: '',
+    expiresAt: '',
     thumbnail: null,
     color: '갈색',
     description: null,

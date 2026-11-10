@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router';
 import { LoginPage } from './features/auth/LoginPage';
 import { GuestOnly, RequireAuth } from './features/auth/RequireAuth';
+import { RequireRole } from './features/auth/RequireRole';
 import { FoundDetailPage } from './features/found/FoundDetailPage';
 import { FoundListPage } from './features/found/FoundListPage';
 import { FoundNewPage } from './features/found/FoundNewPage';
@@ -33,7 +34,9 @@ export function AppRoutes() {
           <Route path="matches" element={<MatchesPage />} />
           <Route path="me/reports" element={<MyReportsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="admin" element={<PlaceholderPage title="관리자" />} />
+          <Route element={<RequireRole role="TEACHER" />}>
+            <Route path="admin" element={<PlaceholderPage title="관리자" />} />
+          </Route>
         </Route>
 
         {/* 입력 흐름 보호 — 하단 탭을 숨긴다 */}

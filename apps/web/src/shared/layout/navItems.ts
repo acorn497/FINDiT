@@ -1,4 +1,4 @@
-import { Bell, ClipboardList, House, Package, SquarePlus, type LucideIcon } from 'lucide-react';
+import { Bell, ClipboardList, House, Package, ShieldCheck, SquarePlus, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   to: string;
@@ -16,3 +16,6 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/me/reports', label: '내 신고', icon: ClipboardList },
   { to: '/notifications', label: '알림', icon: Bell },
 ];
+
+/** 교사 전용 메뉴 — 학생 계정에는 보이지 않는다 */
+export const TEACHER_NAV_ITEMS: NavItem[] = [{ to: '/admin', label: '관리자', icon: ShieldCheck }];
