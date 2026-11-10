@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './common/events';
 import { buildDataSourceOptions } from './database/data-source';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     MatchesModule,
     NotificationsModule,
     RealtimeModule,
+    AdminModule,
     MeModule,
   ],
 })

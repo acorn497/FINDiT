@@ -160,6 +160,7 @@ export class FoundItemsService {
       foundDate: item.foundDate,
       status: item.status,
       createdAt: item.createdAt.toISOString(),
+      expiresAt: item.expiresAt.toISOString(),
       thumbnail: thumbnail ? UploadsService.toDto(thumbnail) : null,
     };
   }

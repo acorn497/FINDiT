@@ -212,6 +212,8 @@ export interface FoundItemSummary {
   foundDate: string;
   status: FoundItemStatus;
   createdAt: string;
+  /** 보관 기간 만료 시각 (등록 + 30일) */
+  expiresAt: string;
   thumbnail: Photo | null;
 }
 
@@ -362,4 +364,47 @@ export interface HomeSummary {
   pendingClaims: number | null;
   /** 신고·등록이 하나도 없는 새 사용자 */
   isNewUser: boolean;
+}
+
+// ── 관리자 (교사) ──────────────────────────────────────
+export interface AdminClaim {
+  id: string;
+  claimant: { id: string; name: string; email: string; grade: number | null; classNo: number | null };
+  createdAt: string;
+}
+
+/** 승인 대기 — 한 물건에 들어온 신청을 함께 묶는다 */
+export interface AdminClaimGroup {
+  item: FoundItemSummary;
+  claims: AdminClaim[];
+}
+
+export interface RejectClaimBody {
+  reason: string;
+}
+
+export interface ExpireFoundItemsBody {
+  /** 비우면 보관 기간이 지난 보관 중 물건 전체 */
+  ids?: string[];
+}
+
+export type StatsPeriod = 'week' | 'month';
+
+export interface StatsBucket {
+  /** '11월 2주' · '2026년 10월' */
+  label: string;
+  from: string;
+  to: string;
+  lostReports: number;
+  foundItems: number;
+  delivered: number;
+  expired: number;
+}
+
+export interface AdminStats {
+  period: StatsPeriod;
+  buckets: StatsBucket[];
+  /** 지금 상태별 습득물 수 */
+  current: Record<FoundItemStatus, number>;
+  pendingClaims: number;
 }
