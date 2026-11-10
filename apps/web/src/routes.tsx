@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router';
 import { LoginPage } from './features/auth/LoginPage';
 import { GuestOnly, RequireAuth } from './features/auth/RequireAuth';
 import { RequireRole } from './features/auth/RequireRole';
+import { AdminPage } from './features/admin/AdminPage';
 import { FoundDetailPage } from './features/found/FoundDetailPage';
 import { FoundListPage } from './features/found/FoundListPage';
 import { FoundNewPage } from './features/found/FoundNewPage';
@@ -11,7 +12,6 @@ import { MatchesPage } from './features/match/MatchesPage';
 import { NotificationsPage } from './features/notification/NotificationsPage';
 import { MyReportsPage } from './features/reports/MyReportsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { PlaceholderPage } from './pages/PlaceholderPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { AppLayout } from './shared/layout/AppLayout';
 
@@ -35,7 +35,7 @@ export function AppRoutes() {
           <Route path="me/reports" element={<MyReportsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route element={<RequireRole role="TEACHER" />}>
-            <Route path="admin" element={<PlaceholderPage title="관리자" />} />
+            <Route path="admin" element={<AdminPage />} />
           </Route>
         </Route>
 
