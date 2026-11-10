@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import { Role, type AuthUser } from '@findit/shared';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { CurrentUser, Roles } from '../common/decorators';
 import { AdminClaimsService } from './admin-claims.service';
+import { AdminItemsService } from './admin-items.service';
 
 export class RejectClaimDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
@@ -13,11 +14,29 @@ export class RejectClaimDto {
   reason: string;
 }
 
+export class ExpireDto {
+  /** 비우면 보관 기간이 지난 보관 중 물건 전체 */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(200)
+  @IsUUID('4', { each: true, message: '습득물 id 가 올바르지 않습니다' })
+  ids?: string[];
+}
+
+export class StatsQuery {
+  @IsOptional()
+  @IsIn(['week', 'month'], { message: 'period 는 week 또는 month 입니다' })
+  period: 'week' | 'month' = 'week';
+}
+
 /** ⑩ 관리자 — TEACHER 만. 학생은 403 */
 @Roles(Role.TEACHER)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly claims: AdminClaimsService) {}
+  constructor(
+    private readonly claims: AdminClaimsService,
+    private readonly items: AdminItemsService,
+  ) {}
 
   /** 승인 대기 목록 (물건별로 묶음) */
   @Get('claims')
@@ -37,5 +56,18 @@ export class AdminController {
   @HttpCode(200)
   reject(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: RejectClaimDto) {
     return this.claims.reject(id, user.id, dto.reason);
+  }
+
+  /** 보관 기간 경과분 일괄 EXPIRED (ids 를 주면 그 물건들만) */
+  @Post('found-items/expire')
+  @HttpCode(200)
+  expire(@Body() dto: ExpireDto) {
+    return this.items.expire(dto.ids);
+  }
+
+  /** 기간별 등록·처리 건수 요약 */
+  @Get('stats')
+  stats(@Query() q: StatsQuery) {
+    return this.items.stats(q.period);
   }
 }

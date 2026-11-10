@@ -109,6 +109,7 @@ export class FoundItemsService {
     const base = this.items.createQueryBuilder('f');
     if (q.category) base.andWhere('f.category = :category', { category: q.category });
     if (q.status) base.andWhere('f.status = :status', { status: q.status });
+    if (q.overdue) base.andWhere('f.expires_at < now()');
     if (q.keyword) {
       base.andWhere('(f.title ILIKE :kw OR f.description ILIKE :kw)', { kw: `%${escapeLike(q.keyword)}%` });
     }

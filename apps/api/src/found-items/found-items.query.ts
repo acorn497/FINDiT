@@ -1,6 +1,6 @@
 import { Category, FOUND_PAGE_SIZE, FoundItemStatus } from '@findit/shared';
 import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
@@ -26,6 +26,12 @@ export class FoundItemListQuery {
   @IsString()
   @MaxLength(60)
   place?: string;
+
+  /** true 면 보관 기간(30일)이 지난 것만 */
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  overdue?: boolean;
 
   @IsOptional()
   @Type(() => Number)
