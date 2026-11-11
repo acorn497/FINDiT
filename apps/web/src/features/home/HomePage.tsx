@@ -89,6 +89,7 @@ export function HomePage() {
               </Link>
             )}
 
+            <div className="md:grid md:grid-cols-2 md:gap-6">
             {res.data.isNewUser ? (
               <section className="mt-5" aria-label="시작하기">
                 <p className="text-sm text-tx-2">아직 올린 신고가 없어요. 무엇을 할까요?</p>
@@ -158,6 +159,8 @@ export function HomePage() {
                 </ul>
               </Section>
             )}
+
+            </div>
 
             <Section title="최근 등록된 습득물" more="/found">
               <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2" aria-label="최근 습득물 목록">

@@ -68,7 +68,7 @@ export function MyReportsPage() {
   return (
     <>
       <AppBar title="내 신고 관리" />
-      <section className="px-4 pb-6 pt-3">
+      <section className="mx-auto max-w-[720px] px-4 pb-6 pt-3">
         <Segmented label="구분" options={KINDS} value={list.kind} onChange={list.setKind} />
 
         {list.kind && (

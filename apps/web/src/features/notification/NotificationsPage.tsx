@@ -85,7 +85,7 @@ export function NotificationsPage() {
   return (
     <>
       <AppBar title="알림" />
-      <section className="px-4 py-4">
+      <section className="mx-auto max-w-[720px] px-4 py-4">
         {state === 'loading' && (
           <LoadingBlock label="알림을 불러오는 중" />
         )}

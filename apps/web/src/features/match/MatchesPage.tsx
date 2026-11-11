@@ -88,7 +88,7 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
   return (
     <>
       <AppBar title="매칭 후보" back />
-      <section className="px-4 pb-6">
+      <section className="mx-auto max-w-[720px] px-4 pb-6">
         {res.status === 'loading' && (
           <LoadingBlock label="후보를 찾는 중" />
         )}

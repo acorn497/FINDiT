@@ -112,8 +112,8 @@ export function LoginPage() {
   };
 
   return (
-    <main className="min-h-dvh bg-bg-2">
-      <div className="mx-auto flex w-full max-w-[390px] flex-col px-6 pb-10 pt-16">
+    <main className="min-h-dvh bg-bg-2 md:flex md:items-center md:justify-center md:py-10">
+      <div className="mx-auto flex w-full max-w-[390px] flex-col px-6 pb-10 pt-16 md:rounded-card md:border md:border-line md:bg-bg-1 md:px-8 md:py-10 md:shadow-sm">
         <Logo className="text-[32px]" />
         <p className="mt-3 text-[15px] leading-relaxed text-tx-2">
           교내 분실물 등록·매칭 서비스

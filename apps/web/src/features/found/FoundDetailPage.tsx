@@ -71,10 +71,10 @@ export function FoundDetailPage() {
   return (
     <>
       <AppBar title="습득물 상세" back="/found" />
-      <article className="pb-40 md:px-4 md:pt-4" aria-busy={!detail}>
+      <article className="pb-40 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] md:items-start md:gap-6 md:px-4 md:pt-4" aria-busy={!detail}>
         <PhotoCarousel photos={photos} status={detail?.status ?? initial?.status ?? 'KEEPING'} title={head?.title ?? '습득물'} />
 
-        <div className="px-4 pt-4 md:px-0">
+        <div className="px-4 pt-4 md:px-0 md:pt-0">
           {head ? (
             <>
               <h2 className="text-xl font-bold">{head.title}</h2>
