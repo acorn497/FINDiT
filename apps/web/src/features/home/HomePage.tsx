@@ -6,7 +6,7 @@ import { useAsync } from '../../shared/hooks/useAsync';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Logo } from '../../shared/layout/Logo';
 import { Button } from '../../shared/ui/Button';
-import { Spinner } from '../../shared/ui/Spinner';
+import { LoadingBlock } from '../../shared/ui/LoadingBlock';
 import { StateView } from '../../shared/ui/StateView';
 import { FoundStatusBadge, LostStatusBadge } from '../../shared/ui/StatusBadge';
 import { useAuth } from '../auth/AuthContext';
@@ -66,10 +66,7 @@ export function HomePage() {
         <p className="mt-1 text-[15px] font-semibold">{user?.name}님, 안녕하세요</p>
 
         {res.status === 'loading' && (
-          <div role="status" className="flex justify-center py-16">
-            <Spinner />
-            <span className="sr-only">요약을 불러오는 중</span>
-          </div>
+          <LoadingBlock label="요약을 불러오는 중" />
         )}
         {res.status === 'error' && (
           <StateView kind="error" title="요약을 불러오지 못했습니다" action={<Button onClick={res.retry}>다시 시도</Button>} />

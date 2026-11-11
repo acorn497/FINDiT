@@ -7,7 +7,7 @@ import { formatDateTime } from '../../shared/lib/date';
 import { useToast } from '../../shared/toast/ToastContext';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
-import { Spinner } from '../../shared/ui/Spinner';
+import { LoadingBlock } from '../../shared/ui/LoadingBlock';
 import { StateView } from '../../shared/ui/StateView';
 import { FoundStatusBadge } from '../../shared/ui/StatusBadge';
 import { adminApi } from './api';
@@ -63,10 +63,7 @@ export function PendingClaimsTab() {
 
   if (res.status === 'loading') {
     return (
-      <div role="status" className="flex justify-center py-16">
-        <Spinner />
-        <span className="sr-only">승인 대기 목록을 불러오는 중</span>
-      </div>
+      <LoadingBlock label="승인 대기 목록을 불러오는 중" />
     );
   }
   if (res.status === 'error') {

@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { CATEGORY_OPTIONS } from '../../shared/form/options';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
+import { FilterChips } from '../../shared/ui/FilterChips';
 import { StateView } from '../../shared/ui/StateView';
 import { FoundCard, FoundCardSkeleton } from './FoundCard';
 import { useFoundItems } from './useFoundItems';
@@ -29,25 +30,7 @@ export function FoundListPage() {
           />
         </label>
 
-        <div role="radiogroup" aria-label="물건 종류 필터" className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
-          {CHIPS.map((chip) => {
-            const selected = chip.value === list.category;
-            return (
-              <button
-                key={chip.label}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                onClick={() => list.setCategory(chip.value)}
-                className={`h-9 shrink-0 rounded-chip border px-3.5 text-[13px] font-semibold ${
-                  selected ? 'border-accent bg-accent text-bg-1' : 'border-line bg-bg-1 text-tx-2'
-                }`}
-              >
-                {chip.label}
-              </button>
-            );
-          })}
-        </div>
+        <FilterChips label="물건 종류 필터" options={CHIPS} value={list.category} onChange={list.setCategory} scroll className="mt-3" />
 
         {list.status === 'error' ? (
           <StateView

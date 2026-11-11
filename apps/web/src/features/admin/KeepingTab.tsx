@@ -4,8 +4,9 @@ import { Link } from 'react-router';
 import { formatMonthDay } from '../../shared/lib/date';
 import { useToast } from '../../shared/toast/ToastContext';
 import { Button } from '../../shared/ui/Button';
+import { FilterChips } from '../../shared/ui/FilterChips';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
-import { Spinner } from '../../shared/ui/Spinner';
+import { LoadingBlock } from '../../shared/ui/LoadingBlock';
 import { StateView } from '../../shared/ui/StateView';
 import { adminApi } from './api';
 
@@ -68,31 +69,18 @@ export function KeepingTab() {
 
   return (
     <section aria-label="보관 중 물품">
-      <div role="radiogroup" aria-label="보관 중 범위" className="flex gap-2">
-        {[
+      <FilterChips
+        label="보관 중 범위"
+        options={[
           { value: true, label: '30일 경과' },
           { value: false, label: '전체 보관 중' },
-        ].map((c) => (
-          <button
-            key={c.label}
-            type="button"
-            role="radio"
-            aria-checked={overdue === c.value}
-            onClick={() => setOverdue(c.value)}
-            className={`h-9 rounded-chip border px-3.5 text-[13px] font-semibold ${
-              overdue === c.value ? 'border-accent bg-accent text-bg-1' : 'border-line bg-bg-1 text-tx-2'
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
+        ]}
+        value={overdue}
+        onChange={setOverdue}
+      />
 
       {state === 'loading' && (
-        <div role="status" className="flex justify-center py-16">
-          <Spinner />
-          <span className="sr-only">보관 중 물품을 불러오는 중</span>
-        </div>
+        <LoadingBlock label="보관 중 물품을 불러오는 중" />
       )}
       {state === 'error' && (
         <StateView kind="error" title="보관 중 물품을 불러오지 못했습니다" action={<Button onClick={() => setReloadKey((k) => k + 1)}>다시 시도</Button>} />

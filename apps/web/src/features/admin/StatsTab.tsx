@@ -2,7 +2,8 @@ import { FOUND_STATUS_LABEL, type FoundItemStatus, type StatsPeriod } from '@fin
 import { useState } from 'react';
 import { useAsync } from '../../shared/hooks/useAsync';
 import { Button } from '../../shared/ui/Button';
-import { Spinner } from '../../shared/ui/Spinner';
+import { FilterChips } from '../../shared/ui/FilterChips';
+import { LoadingBlock } from '../../shared/ui/LoadingBlock';
 import { StateView } from '../../shared/ui/StateView';
 import { FOUND_STATUS_CLASS } from '../../shared/ui/StatusBadge';
 import { adminApi } from './api';
@@ -26,28 +27,18 @@ export function StatsTab() {
 
   return (
     <section aria-label="요약">
-      <div role="radiogroup" aria-label="기간 단위" className="flex gap-2">
-        {(['week', 'month'] as const).map((p) => (
-          <button
-            key={p}
-            type="button"
-            role="radio"
-            aria-checked={period === p}
-            onClick={() => setPeriod(p)}
-            className={`h-9 rounded-chip border px-3.5 text-[13px] font-semibold ${
-              period === p ? 'border-accent bg-accent text-bg-1' : 'border-line bg-bg-1 text-tx-2'
-            }`}
-          >
-            {p === 'week' ? '주별' : '월별'}
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        label="기간 단위"
+        options={[
+          { value: 'week' as StatsPeriod, label: '주별' },
+          { value: 'month' as StatsPeriod, label: '월별' },
+        ]}
+        value={period}
+        onChange={setPeriod}
+      />
 
       {res.status === 'loading' && (
-        <div role="status" className="flex justify-center py-16">
-          <Spinner />
-          <span className="sr-only">요약을 불러오는 중</span>
-        </div>
+        <LoadingBlock label="요약을 불러오는 중" />
       )}
       {res.status === 'error' && <StateView kind="error" title="요약을 불러오지 못했습니다" action={<Button onClick={res.retry}>다시 시도</Button>} />}
 

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { formatDateTime } from '../../shared/lib/date';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
-import { Spinner } from '../../shared/ui/Spinner';
+import { LoadingBlock } from '../../shared/ui/LoadingBlock';
 import { StateView } from '../../shared/ui/StateView';
 import { notificationApi } from './api';
 import { useNotifications } from './NotificationsContext';
@@ -87,10 +87,7 @@ export function NotificationsPage() {
       <AppBar title="알림" />
       <section className="px-4 py-4">
         {state === 'loading' && (
-          <div role="status" className="flex justify-center py-16">
-            <Spinner />
-            <span className="sr-only">알림을 불러오는 중</span>
-          </div>
+          <LoadingBlock label="알림을 불러오는 중" />
         )}
         {state === 'error' && (
           <StateView kind="error" title="알림을 불러오지 못했습니다" action={<Button onClick={() => setReloadKey((k) => k + 1)}>다시 시도</Button>} />

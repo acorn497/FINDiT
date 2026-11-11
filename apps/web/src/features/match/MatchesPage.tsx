@@ -6,7 +6,7 @@ import { foundApi } from '../found/api';
 import { useAsync } from '../../shared/hooks/useAsync';
 import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
-import { Spinner } from '../../shared/ui/Spinner';
+import { LoadingBlock } from '../../shared/ui/LoadingBlock';
 import { StateView } from '../../shared/ui/StateView';
 import { useToast } from '../../shared/toast/ToastContext';
 import { matchApi } from './api';
@@ -90,10 +90,7 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
       <AppBar title="매칭 후보" back />
       <section className="px-4 pb-6">
         {res.status === 'loading' && (
-          <div role="status" className="flex justify-center py-16">
-            <Spinner />
-            <span className="sr-only">후보를 찾는 중</span>
-          </div>
+          <LoadingBlock label="후보를 찾는 중" />
         )}
         {res.status === 'error' && (
           <StateView kind="error" title="후보를 불러오지 못했습니다" action={<Button onClick={res.retry}>다시 시도</Button>} />
