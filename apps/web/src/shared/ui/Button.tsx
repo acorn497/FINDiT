@@ -7,8 +7,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** 요청 중 표시 — 버튼을 비활성화하지는 않고 aria-busy 만 켠다 */
   loading?: boolean;
   block?: boolean;
+  /** sm — 목록 항목 안의 작은 버튼 (높이 36px) */
+  size?: 'md' | 'sm';
   ref?: Ref<HTMLButtonElement>;
 }
+
+const SIZE = {
+  md: 'h-12 px-4 text-[15px]',
+  sm: 'h-9 px-3 text-[13px]',
+};
 
 const VARIANT: Record<Variant, string> = {
   primary: 'bg-accent text-bg-1 hover:bg-accent-dark',
@@ -21,6 +28,7 @@ export function Button({
   variant = 'primary',
   loading = false,
   block = false,
+  size = 'md',
   className = '',
   type = 'button',
   children,
@@ -30,9 +38,9 @@ export function Button({
     <button
       type={type}
       aria-busy={loading || undefined}
-      className={`inline-flex h-12 items-center justify-center gap-1.5 rounded-field px-4 text-[15px] font-bold transition-colors disabled:opacity-50 ${
-        VARIANT[variant]
-      } ${block ? 'w-full' : ''} ${loading ? 'opacity-80' : ''} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-field font-bold transition-colors disabled:opacity-50 ${
+        SIZE[size]
+      } ${VARIANT[variant]} ${block ? 'w-full' : ''} ${loading ? 'opacity-80' : ''} ${className}`}
       {...rest}
     >
       {children}

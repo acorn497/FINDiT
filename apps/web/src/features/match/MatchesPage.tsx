@@ -155,7 +155,7 @@ function MatchBrowser({ lostReportId }: { lostReportId: string }) {
                 <div className="h-20" aria-hidden />
 
                 <div className="fixed inset-x-0 bottom-16 z-20 border-t border-line bg-bg-1 px-4 py-3 md:bottom-0 md:left-60">
-                  <div className="mx-auto grid max-w-[1100px] grid-cols-3 gap-2">
+                  <div className="mx-auto grid max-w-[720px] grid-cols-3 gap-2">
                     <Button variant="secondary" loading={pending === 'exclude'} onClick={() => void exclude()}>
                       이 후보 아님
                     </Button>

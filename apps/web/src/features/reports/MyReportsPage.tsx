@@ -184,16 +184,16 @@ function ReportCard({ item, onClose, onDelete }: ReportCardProps) {
           {item.status !== 'CLOSED' && (
             <Link
               to={`/lost/${item.id}/edit`}
-              className="inline-flex h-9 flex-1 items-center justify-center rounded-field border border-line bg-bg-1 text-[13px] font-bold text-tx-2"
+              className="inline-flex h-9 flex-1 items-center justify-center rounded-field border border-line bg-bg-1 px-3 text-[13px] font-bold text-tx-2 hover:bg-bg-2"
             >
               수정
             </Link>
           )}
-          <Button variant="secondary" className="h-9 flex-1 text-[13px]" onClick={onDelete}>
+          <Button variant="secondary" size="sm" className="flex-1" onClick={onDelete}>
             삭제
           </Button>
           {item.status !== 'CLOSED' && (
-            <Button variant="secondary" className="h-9 flex-1 text-[13px]" onClick={onClose}>
+            <Button variant="secondary" size="sm" className="flex-1" onClick={onClose}>
               찾음 처리
             </Button>
           )}

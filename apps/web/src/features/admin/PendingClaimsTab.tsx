@@ -107,14 +107,14 @@ export function PendingClaimsTab() {
                     </span>
                     <Button
                       variant="secondary"
-                      className="h-9 px-3 text-[13px]"
+                      size="sm"
                       aria-label={`${claim.claimant.name} 신청 거절`}
                       onClick={() => setPending({ type: 'reject', group, claim })}
                     >
                       거절
                     </Button>
                     <Button
-                      className="h-9 px-3 text-[13px]"
+                      size="sm"
                       aria-label={`${claim.claimant.name} 신청 승인`}
                       loading={busy}
                       onClick={() => setPending({ type: 'approve', group, claim })}

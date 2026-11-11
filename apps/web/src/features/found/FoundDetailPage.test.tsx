@@ -117,3 +117,16 @@ describe('FoundDetailPage', () => {
     expect(await screen.findByText('상세 정보를 불러오지 못했습니다')).toBeInTheDocument();
   });
 });
+
+describe('FoundDetailPage — 넓은 화면', () => {
+  it('≥768px 에서는 신청 버튼을 하단 고정 대신 정보 열 바로 아래에 둔다', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+    );
+    renderApp(tree, { route: '/found/f-wallet', api: { 'GET /found-items/f-wallet': [200, detail()] } });
+    const button = await screen.findByRole('button', { name: '내 물건인 것 같아요' });
+    expect(button.closest('article')).not.toBeNull();
+    expect(button.closest('.fixed')).toBeNull();
+  });
+});
