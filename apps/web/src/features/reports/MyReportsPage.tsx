@@ -41,9 +41,9 @@ const CONFIRM_TEXT = {
 };
 
 export function MyReportsPage() {
-  const list = useMyReports();
-  const [confirm, setConfirm] = useState<Confirm>(null);
   const toast = useToast();
+  const list = useMyReports({ onMoreError: (e) => toast.fromError(e, '목록을 더 불러오지 못했습니다') });
+  const [confirm, setConfirm] = useState<Confirm>(null);
 
   /** 삭제와 마감은 되돌릴 수 없으므로 재확인한 뒤에 보낸다 */
   const runConfirmed = async () => {

@@ -99,6 +99,17 @@ describe('FoundListPage', () => {
     expect(await screen.findByText('복구됨')).toBeInTheDocument();
   });
 
+  it('[더 보기]가 실패해도 이미 받은 목록은 그대로 두고 토스트로 알린다', async () => {
+    const first = Array.from({ length: 6 }, (_, i) => summary({ title: `받은 물건 ${i}` }));
+    renderApp(<FoundListPage />, {
+      api: { 'GET /found-items': (_b, url) => (url.searchParams.get('cursor') ? [500, { code: 'X', message: '잠시 후 다시 시도해 주세요' }] : page(first, 'c1', 12)) },
+    });
+    await userEvent.click(await screen.findByRole('button', { name: '더 보기 (12건 중 6건)' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('잠시 후 다시 시도해 주세요');
+    expect(screen.getByText('받은 물건 0')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '더 보기 (12건 중 6건)' })).toBeInTheDocument();
+  });
+
   it('조건이 바뀐 뒤 늦게 도착한 이전 응답은 버린다', async () => {
     let releaseOld: (() => void) | undefined;
     renderApp(<FoundListPage />, {

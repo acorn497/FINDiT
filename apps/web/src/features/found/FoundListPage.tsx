@@ -2,6 +2,7 @@ import type { Category } from '@findit/shared';
 import { Search } from 'lucide-react';
 import { CATEGORY_OPTIONS } from '../../shared/form/options';
 import { AppBar } from '../../shared/layout/AppBar';
+import { useToast } from '../../shared/toast/ToastContext';
 import { Button } from '../../shared/ui/Button';
 import { FilterChips } from '../../shared/ui/FilterChips';
 import { StateView } from '../../shared/ui/StateView';
@@ -12,7 +13,8 @@ const CHIPS: { value: Category | null; label: string }[] = [{ value: null, label
 
 /** ④ 습득물 목록 — 검색창 → 필터 칩 → 건수 → 2열 카드 격자 → [더 보기] */
 export function FoundListPage() {
-  const list = useFoundItems();
+  const toast = useToast();
+  const list = useFoundItems({ onMoreError: (e) => toast.fromError(e, '목록을 더 불러오지 못했습니다') });
 
   return (
     <>

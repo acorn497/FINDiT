@@ -5,7 +5,7 @@ import { reportsApi } from './api';
 type Status = 'loading' | 'ready' | 'error';
 
 /** 내 신고 목록의 조건 묶음 — 구분(전체·분실·습득) + 상태 칩 + 커서 더 보기 */
-export function useMyReports() {
+export function useMyReports({ onMoreError }: { onMoreError?: (e: unknown) => void } = {}) {
   const [kind, setKindState] = useState<ReportKind | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [items, setItems] = useState<MyReportItem[]>([]);
@@ -42,12 +42,12 @@ export function useMyReports() {
       if (gen !== generation.current) return;
       setItems((prev) => [...prev, ...res.items]);
       setNextCursor(res.nextCursor);
-    } catch {
-      if (gen === generation.current) setState('error');
+    } catch (e) {
+      if (gen === generation.current) onMoreError?.(e);
     } finally {
       if (gen === generation.current) setLoadingMore(false);
     }
-  }, [kind, status, nextCursor, loadingMore]);
+  }, [kind, status, nextCursor, loadingMore, onMoreError]);
 
   /** 구분을 바꾸면 상태 칩은 '전체'로 돌아간다 */
   const setKind = useCallback((next: ReportKind | null) => {

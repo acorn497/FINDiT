@@ -7,6 +7,7 @@ import { AppBar } from '../../shared/layout/AppBar';
 import { Button } from '../../shared/ui/Button';
 import { LoadingBlock } from '../../shared/ui/LoadingBlock';
 import { StateView } from '../../shared/ui/StateView';
+import { useToast } from '../../shared/toast/ToastContext';
 import { notificationApi } from './api';
 import { useNotifications } from './NotificationsContext';
 
@@ -25,6 +26,7 @@ export const TYPE_ICON: Record<NotificationType, LucideIcon> = {
  */
 export function NotificationsPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const notifications = useNotifications();
   const { setUnreadCount, subscribe } = notifications;
   const [items, setItems] = useState<AppNotification[]>([]);
@@ -77,6 +79,8 @@ export function NotificationsPage() {
       const res = await notificationApi.list({ cursor });
       setItems((prev) => [...prev, ...res.items]);
       setCursor(res.nextCursor);
+    } catch (e) {
+      toast.fromError(e, '알림을 더 불러오지 못했습니다');
     } finally {
       setLoadingMore(false);
     }

@@ -12,7 +12,7 @@ type Status = 'loading' | 'ready' | 'error';
  * 조건(종류, 300ms 디바운스된 검색어)이 바뀌면 첫 페이지부터 다시 받고,
  * 늦게 도착한 이전 조건의 응답은 버린다.
  */
-export function useFoundItems() {
+export function useFoundItems({ onMoreError }: { onMoreError?: (e: unknown) => void } = {}) {
   const [category, setCategory] = useState<Category | null>(null);
   const [keyword, setKeyword] = useState('');
   const query = useDebouncedValue(keyword.trim(), SEARCH_DEBOUNCE_MS);
@@ -57,12 +57,13 @@ export function useFoundItems() {
       setItems((prev) => [...prev, ...res.items]);
       setTotal(res.total);
       setNextCursor(res.nextCursor);
-    } catch {
-      if (gen === generation.current) setStatus('error');
+    } catch (e) {
+      // 이미 받은 목록은 그대로 두고 알리기만 한다
+      if (gen === generation.current) onMoreError?.(e);
     } finally {
       if (gen === generation.current) setLoadingMore(false);
     }
-  }, [category, query, nextCursor, loadingMore, status]);
+  }, [category, query, nextCursor, loadingMore, status, onMoreError]);
 
   const clear = useCallback(() => {
     setCategory(null);
