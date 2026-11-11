@@ -114,7 +114,7 @@ export function HomePage() {
                         className="flex items-center gap-3 rounded-card border border-line bg-bg-1 px-4 py-3"
                       >
                         <span className="min-w-0 flex-1">
-                          <span className="text-[11px] font-bold text-tx-3">{r.kind === 'lost' ? '분실 신고' : '습득 등록'}</span>
+                          <span className="text-[11px] font-bold text-tx-2">{r.kind === 'lost' ? '분실 신고' : '습득 등록'}</span>
                           <span className="block truncate font-bold">{r.title}</span>
                           {r.kind === 'lost' && (r.candidateCount ?? 0) > 0 && (
                             <span className="text-xs font-semibold text-st-check">후보 {r.candidateCount}개</span>

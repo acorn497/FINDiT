@@ -32,7 +32,7 @@ export function SideNav() {
       {user && (
         <div className="border-t border-line px-3 pt-4">
           <p className="text-sm font-semibold">{user.name}</p>
-          <p className="text-xs text-tx-3">{user.email}</p>
+          <p className="text-xs text-tx-2">{user.email}</p>
           <button
             type="button"
             onClick={() => void logout()}

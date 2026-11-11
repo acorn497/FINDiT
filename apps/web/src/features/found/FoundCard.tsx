@@ -28,7 +28,7 @@ export function FoundCard({ item }: { item: FoundItemSummary }) {
           <span className="sr-only">{CATEGORY_LABEL[item.category]} · 보관 장소 </span>
           {item.keptAt}
         </p>
-        <p className="mt-0.5 text-xs text-tx-3">{formatMonthDay(item.createdAt)} 등록</p>
+        <p className="mt-0.5 text-xs text-tx-2">{formatMonthDay(item.createdAt)} 등록</p>
       </div>
     </Link>
   );

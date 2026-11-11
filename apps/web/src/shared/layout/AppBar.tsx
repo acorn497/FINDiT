@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 
 interface AppBarProps {
@@ -14,6 +14,11 @@ interface AppBarProps {
 /** 상단 앱바 — 뒤로 가기 + 제목 + 보조 버튼 */
 export function AppBar({ title, back, onBack, actions }: AppBarProps) {
   const navigate = useNavigate();
+
+  // 탭·기록에서 화면을 구분할 수 있게 문서 제목을 맞춘다
+  useEffect(() => {
+    document.title = `${title} · FINDiT`;
+  }, [title]);
 
   const handleBack = () => {
     if (onBack) return onBack();

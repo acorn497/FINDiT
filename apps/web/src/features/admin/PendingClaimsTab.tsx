@@ -103,7 +103,7 @@ export function PendingClaimsTab() {
                   <li key={claim.id} className="flex items-center gap-2 px-3 py-2.5">
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-semibold">{who(claim)}</span>
-                      <span className="block text-xs text-tx-3">{formatDateTime(claim.createdAt)} 신청</span>
+                      <span className="block text-xs text-tx-2">{formatDateTime(claim.createdAt)} 신청</span>
                     </span>
                     <Button
                       variant="secondary"

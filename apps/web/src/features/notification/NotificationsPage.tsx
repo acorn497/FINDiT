@@ -122,7 +122,7 @@ export function NotificationsPage() {
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
                         <span className="text-[13px] font-bold">{n.title}</span>
-                        <span className="shrink-0 text-[11px] text-tx-3">{formatDateTime(n.createdAt)}</span>
+                        <span className="shrink-0 text-[11px] text-tx-2">{formatDateTime(n.createdAt)}</span>
                       </span>
                       <span className="mt-0.5 block text-[13px] leading-relaxed text-tx-2">{n.body}</span>
                       <span className="sr-only">{NOTIFICATION_TYPE_LABEL[n.type]}</span>

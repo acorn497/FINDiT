@@ -17,7 +17,7 @@ export function TabBar() {
               end={end}
               className={({ isActive }) =>
                 `relative flex h-full flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
-                  isActive ? 'text-accent' : 'text-tx-3'
+                  isActive ? 'text-accent' : 'text-tx-2'
                 }`
               }
             >

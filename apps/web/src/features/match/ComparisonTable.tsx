@@ -28,7 +28,7 @@ export function ComparisonTable({ report, candidate }: { report: LostReport; can
     <table className="w-full table-fixed border-collapse text-[13px]">
       <caption className="sr-only">내 신고와 습득물 비교</caption>
       <thead>
-        <tr className="text-xs text-tx-3">
+        <tr className="text-xs text-tx-2">
           <th scope="col" className="w-14 py-2 text-left font-semibold">
             항목
           </th>

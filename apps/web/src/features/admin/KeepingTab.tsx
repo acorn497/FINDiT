@@ -111,7 +111,7 @@ export function KeepingTab() {
                       {item.keptAt} · {formatMonthDay(item.createdAt)} 등록
                     </span>
                   </Link>
-                  <span className={`shrink-0 text-xs font-semibold ${exp.overdue ? 'text-err' : 'text-tx-3'}`}>{exp.text}</span>
+                  <span className={`shrink-0 text-xs font-semibold ${exp.overdue ? 'text-err' : 'text-tx-2'}`}>{exp.text}</span>
                 </li>
               );
             })}

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { Button } from './Button';
 
 interface ConfirmDialogProps {
@@ -26,6 +27,8 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const titleId = useId();
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
 
   useEffect(() => {
     if (!open) return;
@@ -42,6 +45,7 @@ export function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-tx-1/40 p-4 sm:items-center" onClick={onCancel}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

@@ -38,7 +38,7 @@ export function TextField({ label, error, success, hint, className = '', ...rest
           ✓ {success}
         </p>
       ) : hint ? (
-        <p id={messageId} className="mt-1.5 text-[12.5px] text-tx-3">
+        <p id={messageId} className="mt-1.5 text-[12.5px] text-tx-2">
           {hint}
         </p>
       ) : null}

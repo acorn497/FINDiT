@@ -80,7 +80,7 @@ export function StatsTab() {
                     <li key={b.from} className="rounded-card border border-line bg-bg-1 px-3 py-2.5">
                       <div className="flex items-baseline justify-between">
                         <span className="text-sm font-bold">{b.label}</span>
-                        <span className="text-xs text-tx-3">
+                        <span className="text-xs text-tx-2">
                           등록 {registered} · 처리 {processed}
                         </span>
                       </div>
@@ -88,7 +88,7 @@ export function StatsTab() {
                         <Bar value={registered} max={max} className="bg-accent" label={`${b.label} 등록 ${registered}건 (분실 신고 ${b.lostReports} · 습득물 ${b.foundItems})`} />
                         <Bar value={processed} max={max} className="bg-st-done" label={`${b.label} 처리 ${processed}건 (전달 완료 ${b.delivered} · 기간 만료 ${b.expired})`} />
                       </div>
-                      <p className="mt-1.5 text-[11px] text-tx-3">
+                      <p className="mt-1.5 text-[11px] text-tx-2">
                         분실 신고 {b.lostReports} · 습득물 {b.foundItems} · 전달 완료 {b.delivered} · 기간 만료 {b.expired}
                       </p>
                     </li>

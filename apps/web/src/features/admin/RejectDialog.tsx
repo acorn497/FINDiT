@@ -1,4 +1,5 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { useFocusTrap } from '../../shared/hooks/useFocusTrap';
 import { maxLength, required } from '../../shared/form/rules';
 import { TextAreaField } from '../../shared/form/TextAreaField';
 import { useField } from '../../shared/form/useField';
@@ -15,6 +16,8 @@ interface RejectDialogProps {
 /** 거절 — 사유를 받아야 보낼 수 있다 (사유는 학생 알림에 담긴다) */
 export function RejectDialog({ open, claimantName, itemTitle, onSubmit, onCancel }: RejectDialogProps) {
   const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
   const [showAll, setShowAll] = useState(false);
   const reason = useField('', [required('거절 사유를 입력해 주세요'), maxLength(200, '사유는 200자 이하로 입력해 주세요')], { showAll });
 
@@ -37,6 +40,7 @@ export function RejectDialog({ open, claimantName, itemTitle, onSubmit, onCancel
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-tx-1/40 p-4 sm:items-center" onClick={onCancel}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
