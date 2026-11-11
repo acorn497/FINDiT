@@ -10,12 +10,6 @@ import { mockApi } from './mockApi';
 
 type Routes = Parameters<typeof mockApi>[0];
 
-/** 라우터 안에서 렌더한다. */
-export function renderWithRouter(ui: ReactElement, { route = '/' }: { route?: string | string[] } = {}) {
-  const entries = Array.isArray(route) ? route : [route];
-  return render(<MemoryRouter initialEntries={entries}>{ui}</MemoryRouter>);
-}
-
 /**
  * 라우터 + AuthProvider 로 렌더한다.
  * user 를 주면 /auth/me 가 그 사용자로, null 이면 401 로 응답한다.

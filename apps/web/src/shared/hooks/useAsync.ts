@@ -19,5 +19,5 @@ export function useAsync<T>(load: (signal: AbortSignal) => Promise<T>, deps: unk
   }, [...deps, key]);
 
   const retry = useCallback(() => setKey((k) => k + 1), []);
-  return { ...state, retry, setData: (data: T) => setState({ status: 'ready', data }) };
+  return { ...state, retry };
 }
