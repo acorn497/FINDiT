@@ -24,8 +24,11 @@ describe('GET /api/found-items — 조건', () => {
     await app.close();
   });
 
-  it('로그인 없이는 401', async () => {
-    await request(http).get('/api/found-items').expect(401);
+  it('목록은 로그인 없이도 볼 수 있고, 상세는 로그인이 필요하다', async () => {
+    const res = await request(http).get('/api/found-items').query({ limit: 6 }).expect(200);
+    expect(res.body.items).toHaveLength(6);
+    expect(res.body.nextCursor).toEqual(expect.any(String));
+    await request(http).get(`/api/found-items/${res.body.items[0].id}`).expect(401);
   });
 
   it('검색어 — 이름·특징, 건수 total 은 조건 기준', async () => {

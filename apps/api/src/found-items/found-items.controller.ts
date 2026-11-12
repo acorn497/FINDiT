@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import type { AuthUser } from '@findit/shared';
-import { CurrentUser } from '../common/decorators';
+import { CurrentUser, Public } from '../common/decorators';
 import { CreateFoundItemDto } from './found-items.dto';
 import { FoundItemListQuery } from './found-items.query';
 import { FoundItemsService } from './found-items.service';
@@ -9,7 +9,11 @@ import { FoundItemsService } from './found-items.service';
 export class FoundItemsController {
   constructor(private readonly service: FoundItemsService) {}
 
-  /** 목록 — ?category &keyword &place &status &limit(기본 6) &cursor */
+  /**
+   * 목록 — ?category &keyword &place &status &overdue &limit(기본 6) &cursor
+   * 게시판처럼 로그인 없이도 볼 수 있다 (상세·수령 신청은 로그인 필요).
+   */
+  @Public()
   @Get()
   list(@Query() q: FoundItemListQuery) {
     return this.service.list(q);
