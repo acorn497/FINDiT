@@ -23,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+      args:
+        EXTRA_CA_PEM: ${EXTRA_CA_PEM:-}
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-findit}:${POSTGRES_PASSWORD:-findit}@db:5432/${POSTGRES_DB:-findit}
       PORT: 3000
@@ -50,6 +52,8 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        EXTRA_CA_PEM: ${EXTRA_CA_PEM:-}
     ports:
       - '${WEB_PORT:-8080}:80'
     depends_on:
@@ -68,6 +72,8 @@ services:
     build:
       context: .
       dockerfile: scripts/test.Dockerfile
+      args:
+        EXTRA_CA_PEM: ${EXTRA_CA_PEM:-}
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-findit}:${POSTGRES_PASSWORD:-findit}@db:5432/${POSTGRES_DB:-findit}
       BASE_URL: http://web

@@ -23,7 +23,8 @@ docker compose up --build -d      # db · api · web — 마이그레이션·시
 - 필요한 것은 Docker(Compose v2) 뿐이다. `.env` 없이 기본값으로 뜬다 — 바꾸려면 `cp .env.example .env`.
 - DB 는 `db-data`, 사진은 `uploads` 볼륨에 남는다. `docker compose down && docker compose up -d` 뒤에도 데이터가 유지된다.
 - 빌드가 끝난 뒤에는 외부 네트워크 없이 동작한다 (폰트·아이콘·이미지 모두 번들/볼륨 안).
-- 사내 프록시처럼 TLS 를 가로채는 망에서 빌드한다면 Dockerfile 의 선택 시크릿 `extra_ca` 로 CA 를 넘길 수 있다 (`docker build --secret id=extra_ca,src=<ca.pem> …`).
+- Dockerfile 은 BuildKit 전용 문법을 쓰지 않아 `docker compose`, `docker build`(BuildKit·구형 빌더), Docker Engine API(`POST /build`) 어느 쪽으로도 빌드된다.
+- 사내 프록시처럼 TLS 를 가로채는 망에서 빌드한다면 빌드 인자 `EXTRA_CA_PEM` 에 CA 인증서(PEM) 내용을 넘긴다 (`EXTRA_CA_PEM="$(cat ca.pem)" docker compose build`). 평소에는 비워 둔다.
 
 ### 시드 계정 (비밀번호 모두 `findit1234`)
 

@@ -123,8 +123,10 @@ $ git log --format="%ad" --date=short | tail -1
 ```
 
 - 이 세션의 실행 환경은 외부로 나가는 TLS 를 프록시가 다시 서명해서, 컨테이너 안의 `npm ci` 가 그 CA 를 알아야 했다.
-  그래서 `docker compose up --build` 대신 같은 Dockerfile 을 `docker build --secret id=extra_ca,…` 로 빌드한 뒤 `docker compose up -d` 를 실행했다.
-  Dockerfile 의 `extra_ca` 시크릿은 선택이라, 일반 환경에서는 `docker compose up --build -d` 한 번으로 그대로 뜬다.
+  그래서 같은 Dockerfile 을 빌드 인자 `EXTRA_CA_PEM` 에 프록시 CA 를 넘겨 빌드한 뒤 `docker compose up -d` 를 실행했다.
+  이 인자는 선택이라, 일반 환경에서는 `docker compose up --build -d` 한 번으로 그대로 뜬다.
+- 첫 외부 배포에서 배포 서비스가 BuildKit 이 아닌 구형 빌더로 빌드해 `RUN --mount`(BuildKit 전용)에서 멈췄다.
+  Dockerfile 을 BuildKit 전용 문법 없이 다시 쓰고, 구형 빌더(`DOCKER_BUILDKIT=0`)로 세 이미지가 모두 빌드되고 전체 테스트가 통과하는 것을 확인했다.
 - 런타임에 외부 네트워크를 부르지 않는다 — 빌드된 번들에 외부 주소는 XML 네임스페이스·오류 안내 링크 문자열뿐이고, 폰트는 시스템 글꼴, 아이콘은 번들, 사진은 볼륨에 있다.
 
 ## 5. 완료 조건 (Definition of Done)
